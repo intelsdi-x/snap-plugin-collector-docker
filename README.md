@@ -1,0 +1,1 @@
+# pulse-plugin-collector-docker
