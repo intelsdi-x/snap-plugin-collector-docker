@@ -146,7 +146,7 @@ func (d *docker) CollectMetrics(metricTypes []plugin.PluginMetricType) ([]plugin
 	return metrics, nil
 }
 
-func (d *docker) GetMetrics() ([]plugin.PluginMetricType, error) {
+func (d *docker) GetMetricTypes(_ plugin.PluginConfigType) ([]plugin.PluginMetricType, error) {
 
 	var namespaces []string
 	var metricTypes []plugin.PluginMetricType
