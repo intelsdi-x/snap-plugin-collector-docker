@@ -21,14 +21,13 @@ limitations under the License.
 
 package wrapper
 
-
 import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestWrapperProperDeclaration(t *testing.T){
+func TestWrapperProperDeclaration(t *testing.T) {
 
 	Convey("Check for proper delcaration of wrapper map", t, func() {
 

@@ -24,8 +24,8 @@ package main
 import (
 	"os"
 
-	"github.com/intelsdi-x/pulse/control/plugin"
 	"github.com/intelsdi-x/pulse-plugin-collector-docker/docker"
+	"github.com/intelsdi-x/pulse/control/plugin"
 )
 
 func main() {

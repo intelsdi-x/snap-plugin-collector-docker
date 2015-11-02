@@ -22,21 +22,21 @@ limitations under the License.
 package docker
 
 import (
-	"os"
-	"fmt"
-	"time"
-	"strings"
-	"path/filepath"
 	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 
-	"github.com/vektra/errors"
 	"github.com/opencontainers/runc/libcontainer/cgroups"
+	"github.com/vektra/errors"
 
+	"github.com/intelsdi-x/pulse-plugin-collector-docker/client"
+	tls "github.com/intelsdi-x/pulse-plugin-collector-docker/tools"
+	"github.com/intelsdi-x/pulse-plugin-collector-docker/wrapper"
 	"github.com/intelsdi-x/pulse/control/plugin"
 	"github.com/intelsdi-x/pulse/control/plugin/cpolicy"
-	"github.com/intelsdi-x/pulse-plugin-collector-docker/client"
-	"github.com/intelsdi-x/pulse-plugin-collector-docker/wrapper"
-	tls "github.com/intelsdi-x/pulse-plugin-collector-docker/tools"
 )
 
 const (
@@ -53,12 +53,12 @@ const (
 )
 
 type docker struct {
-	stats 			*cgroups.Stats					// structure for stats storage
-	client			client.DockerClientInterface	// client for communication with docker (basic info, mount points)
-	tools			tls.ToolsInterface				// tools for handling namespaces and processing stats
-	containersInfo 	[]client.ContainerInfo			// basic info about running containers
-	groupWrap		map[string]wrapper.Stats		// wrapper for cgroup name and interface for stats extraction
-	hostname 		string							// name of the host
+	stats          *cgroups.Stats               // structure for stats storage
+	client         client.DockerClientInterface // client for communication with docker (basic info, mount points)
+	tools          tls.ToolsInterface           // tools for handling namespaces and processing stats
+	containersInfo []client.ContainerInfo       // basic info about running containers
+	groupWrap      map[string]wrapper.Stats     // wrapper for cgroup name and interface for stats extraction
+	hostname       string                       // name of the host
 }
 
 func NewDocker() (*docker, error) {
@@ -73,12 +73,12 @@ func NewDocker() (*docker, error) {
 	}
 
 	d := &docker{
-		stats:      		cgroups.NewStats(),
-		client:         	dockerClient,
-		tools:				new(tls.MyTools),
-		containersInfo: 	containers,
-		groupWrap:			wrapper.Cgroups2Stats,
-		hostname:           host}
+		stats:          cgroups.NewStats(),
+		client:         dockerClient,
+		tools:          new(tls.MyTools),
+		containersInfo: containers,
+		groupWrap:      wrapper.Cgroups2Stats,
+		hostname:       host}
 
 	return d, nil
 }

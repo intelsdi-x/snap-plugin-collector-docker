@@ -27,17 +27,17 @@ import (
 )
 
 var Cgroups2Stats = map[string]Stats{
-	"cpuset": &fs.CpusetGroup{},
-	"cpu": &fs.CpuGroup{},
-	"cpuacct": &fs.CpuacctGroup{},
-	"memory": &fs.MemoryGroup{},
-	"devices": &fs.DevicesGroup{},
-	"freezer": &fs.FreezerGroup{},
-	"net_cls": &fs.NetClsGroup{},
-	"blkio": &fs.BlkioGroup{},
+	"cpuset":     &fs.CpusetGroup{},
+	"cpu":        &fs.CpuGroup{},
+	"cpuacct":    &fs.CpuacctGroup{},
+	"memory":     &fs.MemoryGroup{},
+	"devices":    &fs.DevicesGroup{},
+	"freezer":    &fs.FreezerGroup{},
+	"net_cls":    &fs.NetClsGroup{},
+	"blkio":      &fs.BlkioGroup{},
 	"perf_event": &fs.PerfEventGroup{},
-	"net_prio": &fs.NetPrioGroup{},
-	"hugetlb": &fs.HugetlbGroup{},
+	"net_prio":   &fs.NetPrioGroup{},
+	"hugetlb":    &fs.HugetlbGroup{},
 }
 
 type Stats interface {

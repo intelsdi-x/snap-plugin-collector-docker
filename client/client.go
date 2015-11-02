@@ -31,10 +31,10 @@ import (
 const endpoint string = "unix:///var/run/docker.sock"
 
 type ContainerInfo struct {
-	Id string
-	Status string
+	Id      string
+	Status  string
 	Created int64
-	Image string
+	Image   string
 }
 
 type DockerClientInterface interface {
@@ -42,13 +42,13 @@ type DockerClientInterface interface {
 	FindCgroupMountpoint(subsystem string) (string, error)
 }
 
-type dockerClient struct {}
+type dockerClient struct{}
 
 func NewDockerClient() *dockerClient {
 	return new(dockerClient)
 }
 
-func (dc *dockerClient) FindCgroupMountpoint(subsystem string) (string, error){
+func (dc *dockerClient) FindCgroupMountpoint(subsystem string) (string, error) {
 	return cgroups.FindCgroupMountpoint(subsystem)
 }
 
@@ -68,12 +68,11 @@ func (dc *dockerClient) ListContainers() ([]ContainerInfo, error) {
 	containers := []ContainerInfo{}
 	for _, cont := range containerList {
 		cinfo := ContainerInfo{
-			Id: cont.ID,
-			Status: cont.Status,
+			Id:      cont.ID,
+			Status:  cont.Status,
 			Created: cont.Created,
-			Image: cont.Image}
+			Image:   cont.Image}
 		containers = append(containers, cinfo)
 	}
 	return containers, nil
 }
-

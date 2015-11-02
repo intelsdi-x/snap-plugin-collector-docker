@@ -31,15 +31,15 @@ import (
 )
 
 type ClientMock struct {
-    mock.Mock
+	mock.Mock
 }
 
-func (cm *ClientMock) ListContainers() ([]ContainerInfo, error){
+func (cm *ClientMock) ListContainers() ([]ContainerInfo, error) {
 	ret := cm.Mock.Called()
 	return ret.Get(0).([]ContainerInfo), ret.Error(1)
 }
 
-func (cm *ClientMock) FindCgroupMountpoint(subsystem string) (string, error){
+func (cm *ClientMock) FindCgroupMountpoint(subsystem string) (string, error) {
 	ret := cm.Mock.Called(subsystem)
 	return ret.String(0), ret.Error(1)
 }
@@ -48,7 +48,7 @@ type StatsMock struct {
 	mock.Mock
 }
 
-func (s *StatsMock) GetStats(path string, stats *cgroups.Stats) error  {
+func (s *StatsMock) GetStats(path string, stats *cgroups.Stats) error {
 	ret := s.Mock.Called(path, stats)
 	return ret.Error(0)
 }
@@ -70,4 +70,3 @@ func (tm *ToolsMock) GetValueByNamespace(object interface{}, ns []string) interf
 	ret := tm.Mock.Called(object, ns)
 	return ret.Get(0).(interface{})
 }
-

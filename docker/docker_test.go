@@ -33,17 +33,14 @@ import (
 	"github.com/intelsdi-x/pulse/control/plugin"
 
 	. "github.com/intelsdi-x/pulse-plugin-collector-docker/client"
-	. "github.com/intelsdi-x/pulse-plugin-collector-docker/wrapper"
-	. "github.com/intelsdi-x/pulse-plugin-collector-docker/tools"
 	. "github.com/intelsdi-x/pulse-plugin-collector-docker/mocks"
-
-
-
+	. "github.com/intelsdi-x/pulse-plugin-collector-docker/tools"
+	. "github.com/intelsdi-x/pulse-plugin-collector-docker/wrapper"
 )
 
-func TestExtendDockerIdProper(t *testing.T){
+func TestExtendDockerIdProper(t *testing.T) {
 
-	Convey("Given short docker id", t, func(){
+	Convey("Given short docker id", t, func() {
 
 		shortId := "1234567890ab"
 
@@ -53,8 +50,8 @@ func TestExtendDockerIdProper(t *testing.T){
 			other := "31068893a2bc9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
 
 			ci := []ContainerInfo{
-					ContainerInfo{Id: other},
-					ContainerInfo{Id: proper},
+				ContainerInfo{Id: other},
+				ContainerInfo{Id: proper},
 			}
 
 			Convey("When docker id is extended", func() {
@@ -73,9 +70,9 @@ func TestExtendDockerIdProper(t *testing.T){
 	})
 }
 
-func TestExtendDockerIdWrong(t *testing.T){
+func TestExtendDockerIdWrong(t *testing.T) {
 
-	Convey("Given incorrect short docker id", t, func(){
+	Convey("Given incorrect short docker id", t, func() {
 
 		wrongShortId := "wrongid12334"
 
@@ -105,7 +102,7 @@ func TestExtendDockerIdWrong(t *testing.T){
 	})
 }
 
-func TestGetStats(t *testing.T){
+func TestGetStats(t *testing.T) {
 
 	Convey("Given docker id, stats, client", t, func() {
 
@@ -130,12 +127,12 @@ func TestGetStats(t *testing.T){
 			Convey("When docker stats are requested", func() {
 
 				d := &docker{
-					stats:      		stats,
-					client:            	mockClient,
-					tools:				new(MyTools),
-					containersInfo: 	[]ContainerInfo{},
-					groupWrap:          mockWrapper,
-					hostname:           "",
+					stats:          stats,
+					client:         mockClient,
+					tools:          new(MyTools),
+					containersInfo: []ContainerInfo{},
+					groupWrap:      mockWrapper,
+					hostname:       "",
 				}
 
 				err := d.getStats(dockerId)
@@ -154,7 +151,7 @@ func TestGetStats(t *testing.T){
 	})
 }
 
-func TestCollectMetrics(t *testing.T){
+func TestCollectMetrics(t *testing.T) {
 
 	Convey("Given 1234567890ab/cpu_stats/cpu_usage/total_usage metric type", t, func() {
 
@@ -181,12 +178,12 @@ func TestCollectMetrics(t *testing.T){
 			mockTools.On("GetValueByNamespace", mock.AnythingOfType("*cgroups.Stats"), mock.Anything).Return(43)
 
 			d := &docker{
-				stats: 				stats,
-				client: 			mockClient,
-				tools:				mockTools,
-				containersInfo: 	[]ContainerInfo{ContainerInfo{Id: longDockerId}},
-				groupWrap: 			mockWrapper,
-				hostname: 			"",
+				stats:          stats,
+				client:         mockClient,
+				tools:          mockTools,
+				containersInfo: []ContainerInfo{ContainerInfo{Id: longDockerId}},
+				groupWrap:      mockWrapper,
+				hostname:       "",
 			}
 
 			Convey("When CollectMetric is called", func() {
@@ -197,7 +194,7 @@ func TestCollectMetrics(t *testing.T){
 				})
 
 				Convey("One metric should be returned", func() {
-					So(len(mts),ShouldEqual, 1)
+					So(len(mts), ShouldEqual, 1)
 				})
 
 				Convey("Metric value should be correctly set", func() {
@@ -210,7 +207,7 @@ func TestCollectMetrics(t *testing.T){
 }
 
 func TestGetMetrics(t *testing.T) {
-	Convey("Given docker id and running containers info", t , func() {
+	Convey("Given docker id and running containers info", t, func() {
 		longDockerId := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
 		containersInfo := []ContainerInfo{ContainerInfo{Id: longDockerId}}
 		mountPoint := "cgroup/mount/point/path"
@@ -223,7 +220,7 @@ func TestGetMetrics(t *testing.T) {
 			mockWrapper := map[string]Stats{"cpu": mockStats}
 
 			mockTools.On(
-				"Map2Namespace", mock.Anything,	mock.AnythingOfType("string"), mock.AnythingOfType("*[]string")).Return().Run(
+				"Map2Namespace", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("*[]string")).Return().Run(
 				func(args mock.Arguments) {
 					id := args.String(1)
 					ns := args.Get(2).(*[]string)
@@ -235,12 +232,12 @@ func TestGetMetrics(t *testing.T) {
 			mockStats.On("GetStats", mock.AnythingOfType("string"), mock.AnythingOfType("*cgroups.Stats")).Return(nil)
 
 			d := &docker{
-				stats: 				stats,
-				client: 			mockClient,
-				tools: 				mockTools,
-				groupWrap: 			mockWrapper,
-				containersInfo: 	containersInfo,
-				hostname: 			"",
+				stats:          stats,
+				client:         mockClient,
+				tools:          mockTools,
+				groupWrap:      mockWrapper,
+				containersInfo: containersInfo,
+				hostname:       "",
 			}
 
 			Convey("When GetMetrics is called", func() {

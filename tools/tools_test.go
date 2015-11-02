@@ -22,20 +22,20 @@ limitations under the License.
 package tools
 
 import (
-	"testing"
 	"encoding/json"
+	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
 	"github.com/opencontainers/runc/libcontainer/cgroups"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 var _ cgroups.BlkioStatEntry
 
-func TestMap2NamespaceNoComposition(t *testing.T){
+func TestMap2NamespaceNoComposition(t *testing.T) {
 	Convey("Given json-tagged struct", t, func() {
 
-		obj := struct{
-			Foo int `json:"foo"`
+		obj := struct {
+			Foo int    `json:"foo"`
 			Bar string `json:"bar"`
 		}{
 			99,
@@ -71,16 +71,18 @@ func TestMap2NamespaceNoComposition(t *testing.T){
 
 func TestMap2NamespaceSimpleComposition(t *testing.T) {
 
-	Convey("Given json-tagged struct with simple composition", t , func() {
-		obj := struct{
-			Foo struct{
-					Bar string `json:"bar"`
-					Baz string `json:"baz"`
-				} 		`json:"foo"`
-			Qaz int 	`json:"qaz"`
+	Convey("Given json-tagged struct with simple composition", t, func() {
+		obj := struct {
+			Foo struct {
+				Bar string `json:"bar"`
+				Baz string `json:"baz"`
+			} `json:"foo"`
+			Qaz int `json:"qaz"`
 		}{
-			struct{Bar string `json:"bar"`
-				   Baz string `json:"baz"`}{"for_bar", "for_baz"},
+			struct {
+				Bar string `json:"bar"`
+				Baz string `json:"baz"`
+			}{"for_bar", "for_baz"},
 			99,
 		}
 
@@ -109,12 +111,12 @@ func TestMap2NamespaceSimpleComposition(t *testing.T) {
 	})
 }
 
-func TestMap2NamespaceSpecialCaseSlice(t *testing.T){
+func TestMap2NamespaceSpecialCaseSlice(t *testing.T) {
 
 	Convey("Given json-tagged struct with slice of len = 3", t, func() {
-		obj := struct{
-			Foo []string 	`json:"foo"`
-			Bar int			`json:"bar"`
+		obj := struct {
+			Foo []string `json:"foo"`
+			Bar int      `json:"bar"`
 		}{
 			[]string{"11", "22", "33"},
 			99,
@@ -144,12 +146,12 @@ func TestMap2NamespaceSpecialCaseSlice(t *testing.T){
 		})
 	})
 }
-/*
-func TestGetValueByNamespaceNoComposition(t *testing.T){
+
+func TestGetValueByNamespaceNoComposition(t *testing.T) {
 	Convey("Given json-tagged struct with no composition", t, func() {
-		obj := struct{
-			Foo string 	`json:"foo"`
-			Bar int		`json:"bar"`
+		obj := struct {
+			Foo string `json:"foo"`
+			Bar int    `json:"bar"`
 		}{
 			"foo_val",
 			43,
@@ -177,16 +179,17 @@ func TestGetValueByNamespaceNoComposition(t *testing.T){
 func TestGetValueByNamespaceSimpleComposition(t *testing.T) {
 
 	Convey("Given json-tagged composite struct", t, func() {
-		obj := struct{
-			Foo struct{
-				Bar int 	`json:"bar"`
-				Baz string	`json:"baz"`
-				}			`json:"foo"`
-			Qaz string 		`json:"qaz"`
+		obj := struct {
+			Foo struct {
+				Bar int    `json:"bar"`
+				Baz string `json:"baz"`
+			} `json:"foo"`
+			Qaz string `json:"qaz"`
 		}{
-			struct{
-				Bar int		`json:"bar"`
-				Baz	string	`json:"baz"`}{43, "baz_val"},
+			struct {
+				Bar int    `json:"bar"`
+				Baz string `json:"baz"`
+			}{43, "baz_val"},
 			"qaz_val",
 		}
 
@@ -222,16 +225,17 @@ func TestGetValueByNamespaceSimpleComposition(t *testing.T) {
 func TestGetValueByNamespaceSliceCompositionInt(t *testing.T) {
 
 	Convey("Given json-tagged composite struct with slice", t, func() {
-		obj := struct{
-			Foo struct{
-				Bar []uint64 	`json:"bar"`
-				Baz string		`json:"baz"`
-				}				`json:"foo"`
-			Qaz string 			`json:"qaz"`
+		obj := struct {
+			Foo struct {
+				Bar []uint64 `json:"bar"`
+				Baz string   `json:"baz"`
+			} `json:"foo"`
+			Qaz string `json:"qaz"`
 		}{
-			struct{
-				Bar []uint64		`json:"bar"`
-				Baz	string	`json:"baz"`}{[]uint64{43, 1}, "baz_val"},
+			struct {
+				Bar []uint64 `json:"bar"`
+				Baz string   `json:"baz"`
+			}{[]uint64{43, 1}, "baz_val"},
 			"qaz_val",
 		}
 
@@ -273,19 +277,20 @@ func TestGetValueByNamespaceSliceCompositionInt(t *testing.T) {
 func TestGetValueByNamespaceSliceCompositionBlkio(t *testing.T) {
 
 	Convey("Given json-tagged composite struct with slice", t, func() {
-		obj := struct{
-			Foo struct{
-				Bar []cgroups.BlkioStatEntry 	`json:"bar"`
-				Baz string						`json:"baz"`
-				}								`json:"foo"`
-			Qaz string 							`json:"qaz"`
+		obj := struct {
+			Foo struct {
+				Bar []cgroups.BlkioStatEntry `json:"bar"`
+				Baz string                   `json:"baz"`
+			} `json:"foo"`
+			Qaz string `json:"qaz"`
 		}{
-			struct{
-				Bar []cgroups.BlkioStatEntry	`json:"bar"`
-				Baz	string	`json:"baz"`}{
-					[]cgroups.BlkioStatEntry{cgroups.BlkioStatEntry{Major: 1, Minor: 2, Op: "op", Value: 4}},
-					"baz_val"},
-				"qaz_val",
+			struct {
+				Bar []cgroups.BlkioStatEntry `json:"bar"`
+				Baz string                   `json:"baz"`
+			}{
+				[]cgroups.BlkioStatEntry{cgroups.BlkioStatEntry{Major: 1, Minor: 2, Op: "op", Value: 4}},
+				"baz_val"},
+			"qaz_val",
 		}
 
 		Convey("When values by foo/bar/0/* namespace is requested", func() {
@@ -335,48 +340,20 @@ func TestGetValueByNamespaceSliceCompositionBlkio(t *testing.T) {
 	})
 }
 
-func TestGetValueByNamespaceSliceUnsupported(t *testing.T) {
-
-	Convey("Given json-tagged composite struct with slice", t, func() {
-		obj := struct{
-			Foo struct{
-				Bar []string 	`json:"bar"`
-				Baz string		`json:"baz"`
-				}				`json:"foo"`
-			Qaz string 			`json:"qaz"`
-		}{
-			struct{
-				Bar []string	`json:"bar"`
-				Baz	string	`json:"baz"`}{
-					[]string{"unsupported"},
-					"baz_val"},
-				"qaz_val",
-		}
-
-		Convey("When values by unsupported foo/bar/0 namespace is requested", func() {
-			ns := []string{"foo", "bar", "0"}
-			tools := MyTools{}
-			val := tools.GetValueByNamespace(obj, ns)
-			Convey("Then nil value is returned", func() {
-				So(val, ShouldBeNil)
-			})
-		})
-	})
-}
-
 func TestGetValueByNamespaceMemoryMapComposition(t *testing.T) {
 
 	Convey("Given json-tagged composite struct with map", t, func() {
-		obj := struct{
-			Foo struct{
-				Bar map[string]uint64 	`json:"bar"`
-				Baz string				`json:"baz"`
-				}						`json:"foo"`
-			Qaz string 					`json:"qaz"`
+		obj := struct {
+			Foo struct {
+				Bar map[string]uint64 `json:"bar"`
+				Baz string            `json:"baz"`
+			} `json:"foo"`
+			Qaz string `json:"qaz"`
 		}{
-			struct{
-				Bar map[string]uint64	`json:"bar"`
-				Baz	string	`json:"baz"`}{map[string]uint64{"tar": 43, "far": 1}, "baz_val"},
+			struct {
+				Bar map[string]uint64 `json:"bar"`
+				Baz string            `json:"baz"`
+			}{map[string]uint64{"tar": 43, "far": 1}, "baz_val"},
 			"qaz_val",
 		}
 
@@ -418,20 +395,21 @@ func TestGetValueByNamespaceMemoryMapComposition(t *testing.T) {
 func TestGetValueByNamespaceHugetlbMapComposition(t *testing.T) {
 
 	Convey("Given json-tagged composite struct with map", t, func() {
-		obj := struct{
-			Foo struct{
-				Bar map[string]cgroups.HugetlbStats 	`json:"bar"`
-				Baz string								`json:"baz"`
-				}										`json:"foo"`
-			Qaz string 									`json:"qaz"`
+		obj := struct {
+			Foo struct {
+				Bar map[string]cgroups.HugetlbStats `json:"bar"`
+				Baz string                          `json:"baz"`
+			} `json:"foo"`
+			Qaz string `json:"qaz"`
 		}{
-			struct{
-				Bar map[string]cgroups.HugetlbStats		`json:"bar"`
-				Baz	string	`json:"baz"`}{
-					map[string]cgroups.HugetlbStats{
-						"2MB": cgroups.HugetlbStats{Usage: 43, MaxUsage: 99, Failcnt: 7}},
-					"baz_val"},
-				"qaz_val",
+			struct {
+				Bar map[string]cgroups.HugetlbStats `json:"bar"`
+				Baz string                          `json:"baz"`
+			}{
+				map[string]cgroups.HugetlbStats{
+					"2MB": cgroups.HugetlbStats{Usage: 43, MaxUsage: 99, Failcnt: 7}},
+				"baz_val"},
+			"qaz_val",
 		}
 
 		Convey("When values by foo/bar/2MB/usage namespace is requested", func() {
@@ -484,20 +462,21 @@ func TestGetValueByNamespaceHugetlbMapComposition(t *testing.T) {
 func TestGetValueByNamespaceUnsupportedMapComposition(t *testing.T) {
 
 	Convey("Given json-tagged composite struct with unsupported map type", t, func() {
-		obj := struct{
-			Foo struct{
-				Bar map[string]string 	`json:"bar"`
-				Baz string				`json:"baz"`
-				}						`json:"foo"`
-			Qaz string 					`json:"qaz"`
+		obj := struct {
+			Foo struct {
+				Bar map[string]string `json:"bar"`
+				Baz string            `json:"baz"`
+			} `json:"foo"`
+			Qaz string `json:"qaz"`
 		}{
-			struct{
-				Bar map[string]string	`json:"bar"`
-				Baz	string	`json:"baz"`}{
-					map[string]string{
-						"2MB": "value"},
-					"baz_val"},
-				"qaz_val",
+			struct {
+				Bar map[string]string `json:"bar"`
+				Baz string            `json:"baz"`
+			}{
+				map[string]string{
+					"2MB": "value"},
+				"baz_val"},
+			"qaz_val",
 		}
 
 		Convey("When values by foo/bar/2MB namespace is requested", func() {
@@ -511,18 +490,19 @@ func TestGetValueByNamespaceUnsupportedMapComposition(t *testing.T) {
 	})
 }
 
-func TestGetValuesByTagWrongNamespace(t *testing.T){
+func TestGetValuesByTagWrongNamespace(t *testing.T) {
 	Convey("Given json-tagged composite struct", t, func() {
-		obj := struct{
-			Foo struct{
-				Bar uint64 		`json:"bar"`
-				Baz string		`json:"baz"`
-				}				`json:"foo"`
-			Qaz string 			`json:"qaz"`
+		obj := struct {
+			Foo struct {
+				Bar uint64 `json:"bar"`
+				Baz string `json:"baz"`
+			} `json:"foo"`
+			Qaz string `json:"qaz"`
 		}{
-			struct{
-				Bar uint64	`json:"bar"`
-				Baz	string	`json:"baz"`}{43, "baz_val"},
+			struct {
+				Bar uint64 `json:"bar"`
+				Baz string `json:"baz"`
+			}{43, "baz_val"},
 			"qaz_val",
 		}
 
@@ -537,5 +517,3 @@ func TestGetValuesByTagWrongNamespace(t *testing.T){
 		})
 	})
 }
-
-*/

@@ -23,13 +23,13 @@ package tools
 
 import (
 	"fmt"
-	"strings"
+	"path/filepath"
 	"reflect"
 	"strconv"
-	"path/filepath"
+	"strings"
 
+	_ "github.com/docker/docker/vendor/src/github.com/opencontainers/runc/libcontainer/cgroups"
 	"github.com/oleiade/reflections"
-	_"github.com/docker/docker/vendor/src/github.com/opencontainers/runc/libcontainer/cgroups"
 )
 
 type ToolsInterface interface {
@@ -38,7 +38,7 @@ type ToolsInterface interface {
 	GetValueByNamespace(object interface{}, ns []string) interface{}
 }
 
-type MyTools struct {}
+type MyTools struct{}
 
 func (t *MyTools) Map2Namespace(stats map[string]interface{}, current string, namespaces *[]string) {
 	for key, val := range stats {
@@ -116,7 +116,7 @@ func (t *MyTools) GetValueByNamespace(object interface{}, ns []string) interface
 				if val.Index(idx).Kind() == reflect.Struct {
 					return t.GetValueByNamespace(val.Index(idx).Interface(), ns[2:])
 				} else {
-					return val.Index(idx)
+					return val.Index(idx).Interface()
 				}
 			case reflect.Map:
 				key := ns[1]
@@ -135,7 +135,7 @@ func (t *MyTools) GetValueByNamespace(object interface{}, ns []string) interface
 				if len(ns) == 1 {
 					return val
 				} else {
-				// or go deeper
+					// or go deeper
 					return t.GetValueByNamespace(val, ns[1:])
 				}
 			}
