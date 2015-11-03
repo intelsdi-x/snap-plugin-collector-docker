@@ -152,13 +152,9 @@ func (d *docker) GetMetricTypes(_ plugin.PluginConfigType) ([]plugin.PluginMetri
 	var metricTypes []plugin.PluginMetricType
 
 	for _, container := range d.containersInfo {
-		id, err := d.extendDockerId(container.Id)
-		if err != nil {
-			return nil, err
-		}
 		// calling getStats will populate stats object
 		// parsing it one will get info on available namespace
-		_ = d.getStats(id)
+		_ = d.getStats(container.Id)
 
 		// marshal-unmarshal to get map with json tags as keys
 		jsondata, _ := json.Marshal(d.stats)
@@ -166,7 +162,7 @@ func (d *docker) GetMetricTypes(_ plugin.PluginConfigType) ([]plugin.PluginMetri
 		_ = json.Unmarshal(jsondata, &jmap)
 
 		// parse map to get namespace strings
-		d.tools.Map2Namespace(jmap, container.Id, &namespaces)
+		d.tools.Map2Namespace(jmap, container.Id[:12], &namespaces)
 	}
 
 	for _, namespace := range namespaces {
