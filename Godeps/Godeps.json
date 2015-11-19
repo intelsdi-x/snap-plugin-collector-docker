@@ -17,7 +17,7 @@
 			"Rev": "632977f98cd34d217c4b57d0840ec188b3d3dcaf"
 		},
 		{
-			"ImportPath": "github.com/opencontainers/runc",
+			"ImportPath": "github.com/opencontainers/runc/libcontainer",
 			"Comment": "v0.0.4-119-g3be7f87",
 			"Rev": "3be7f87b1bef7512243c6c69d1d5c4c49b5346b4"
 		},
