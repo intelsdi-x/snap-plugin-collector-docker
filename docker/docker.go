@@ -52,6 +52,7 @@ const (
 	mountInfo = "/proc/self/mountinfo"
 )
 
+// Docker plugin type
 type docker struct {
 	stats          *cgroups.Stats               // structure for stats storage
 	client         client.DockerClientInterface // client for communication with docker (basic info, mount points)
@@ -61,6 +62,7 @@ type docker struct {
 	hostname       string                       // name of the host
 }
 
+// Docker plugin initializer
 func NewDocker() (*docker, error) {
 	host, _ := os.Hostname()
 	// create new docker client
@@ -83,6 +85,7 @@ func NewDocker() (*docker, error) {
 	return d, nil
 }
 
+// wrapper for cgroup stats extraction
 func (d *docker) getStats(id string) error {
 
 	for cg, stat := range d.groupWrap {
@@ -105,6 +108,7 @@ func (d *docker) getStats(id string) error {
 	return nil
 }
 
+// short docker id (12 char) is extended
 func (d *docker) extendDockerId(shortId string) (string, error) {
 
 	for _, cinfo := range d.containersInfo {
