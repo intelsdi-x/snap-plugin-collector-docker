@@ -1,0 +1,29 @@
+{
+	"ImportPath": "github.com/intelsdi-x/pulse-plugin-collector-docker",
+	"GoVersion": "go1.5",
+	"Deps": [
+		{
+			"ImportPath": "github.com/fsouza/go-dockerclient",
+			"Rev": "412c004d923b7b89701e7a1632de83f843657a03"
+		},
+		{
+			"ImportPath": "github.com/intelsdi-x/pulse",
+			"Comment": "0.2.0-217-gde28813",
+			"Rev": "de2881352745c206284b74f4ef1165ba4510971a"
+		},
+		{
+			"ImportPath": "github.com/oleiade/reflections",
+			"Comment": "0.1.2-2-g632977f",
+			"Rev": "632977f98cd34d217c4b57d0840ec188b3d3dcaf"
+		},
+		{
+			"ImportPath": "github.com/opencontainers/runc/libcontainer",
+			"Comment": "v0.0.4-119-g3be7f87",
+			"Rev": "3be7f87b1bef7512243c6c69d1d5c4c49b5346b4"
+		},
+		{
+			"ImportPath": "github.com/vektra/errors",
+			"Rev": "c64d83aba85aa4392895aadeefabbd24e89f3580"
+		}
+	]
+}

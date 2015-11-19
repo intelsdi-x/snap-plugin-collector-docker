@@ -1,0 +1,25 @@
+sudo: false
+language: go
+go:
+- 1.4.2
+- 1.5
+before_install:
+- cp .netrc ~
+- chmod 600 .netrc
+- go get github.com/tools/godep
+- if [ ! -d $PULSE_PLUGIN_SOURCE ]; then mkdir -p $HOME/gopath/src/github.com/intelsdi-x; ln -s $TRAVIS_BUILD_DIR $PULSE_PLUGIN_SOURCE; fi # CI for forks not from intelsdi-x
+env:
+  global:
+    - PULSE_PLUGIN_SOURCE=/home/travis/gopath/src/github.com/intelsdi-x/pulse-plugin-collector-docker
+  matrix:
+    - TEST=unit
+install:
+- export TMPDIR=$HOME/tmp
+- mkdir -p $TMPDIR
+- cd $PULSE_PLUGIN_SOURCE # change dir into source
+- make deps
+script:
+- make check TEST=$TEST 2>&1 # Run test suite
+notifications:
+  slack:
+    secure: VkbZLIc2RH8yf3PtIAxUNPdAu3rQQ7yQx0GcK124JhbEnZGaHyK615V0rbG7HcVmYKGPdB0cXqZiLBDKGqGKb2zR1NepOe1nF03jxGSpPq8jIFeEXSJGEYGL34ScDzZZGuG6qwbjFcXiW5lqn6t8igzp7v2+URYBaZo5ktCS2xY=
