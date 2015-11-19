@@ -241,7 +241,7 @@ func TestGetMetrics(t *testing.T) {
 			}
 
 			Convey("When GetMetrics is called", func() {
-				mts, err := d.GetMetrics()
+				mts, err := d.GetMetricTypes(plugin.PluginConfigType{})
 
 				Convey("Then no error should be reported", func() {
 					So(err, ShouldBeNil)
