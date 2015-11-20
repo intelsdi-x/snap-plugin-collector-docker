@@ -1,5 +1,4 @@
-##Pulse Docker Collector plugin
-<!---
+<!--
 http://www.apache.org/licenses/LICENSE-2.0.txt
 
 
@@ -17,89 +16,106 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+[![Build Status](https://magnum.travis-ci.com/intelsdi-x/pulse-plugin-collector-docker.svg?token=HoxHq3yqBGpySzRd5XUm&branch=master)](https://magnum.travis-ci.com/intelsdi-x/pulse-plugin-collector-docker)
+# Pulse Docker Collector Plugin
 
-#Description
-Plugin collects Docker runtime  metrics using remote API and libcontainers cgroup stats.
+Plugin collects runtime metrics from docker containers on host machine. It gathers information about resource usage and perfromance characteristics of running containers. 
 
-#Assumptions
-* Linux kernel version >= 2.6.12-rc2
-* Docker installed
 
-#Metrics
- - /intel
-	- /linux
-		- /docker
-			- /<docker_id>
-				- /cpu_stats
-					- /cpu_usage
-						- /total_usage
-						- /usage_in_kernelmode
-						- /usage_in_usermode
-						- /percpu_usage
-							/0
-							/1
-							..
-							/N
-					- throttling_data
-						- /periods
-						- /throttled_periods
-						- /throttled_time
-				- /memory_stats
-					- /cache
-					- /usage
-						- /usage
-						- /max_usage
-						- /failcnt
-					- /swap_usage
-						- /usage
-						- /max_usage
-						- /failcnt
-					- /kernel_usage
-						- /usage
-						- /max_usage
-						- /failcnt
-					- /stats
-						- /cache
-						- /rss
-						- /rss_huge
-						- /mapped_file
-						- /writeback	
-						- /pgpgin
-						- /pgpgout
-						- /pgfault
-						- /pgmajfault
-						- /inactive_anon
-						- /active_anon
-						- /inactive_file
-						- /active_file
-						- /unevictable
-						- /hierarchical_memory_limit
-						- /total_cache
-						- /total_rss
-						- /total_rss_huge
-						- /total_mapped_file
-						- /total_writeback
-						- /total_pgpgin
-						- /total_pgpgout
-						- /total_pgfault
-						- /total_pgmajfault
-						- /total_inactive_anon
-						- /total_active_anon
-						- /total_inactive_file
-						- /total_active_file
-						- /total_unevictable
-				- /blkio_stats
-					- /io_service_bytes_recursive
-					- /io_serviced_recursive
-					- /io_queue_recursive
-					- /io_service_time_recursive
-					- /io_wait_time_recursive
-					- /io_merged_recursive
-					- /io_time_recursive
-					- /sectors_recursive
-				- /hugetlb_stats
-					- /2MB
-						- /usage
-						- /max_usage
-						- /failcnt
+1. [Getting Started](#getting-started)
+  * [Installation](#installation)
+2. [Documentation](#documentation)
+  * [Collected Metrics](#collected-metrics)
+3. [Community Support](#community-support)
+4. [Contributing](#contributing)
+5. [License](#license-and-authors)
+6. [Acknowledgements](#acknowledgements)
 
+## Getting Started
+
+In order to use this plugin you need docker engine installed. Visit [Install Docker Engine](https://docs.docker.com/engine/installation/) for detailed instructions how to do it.
+
+### Installation
+
+Plugin compilation
+
+```
+make
+```
+
+## Documentation
+
+All metrics gathered by this plugin are exposed by [cgroups](https://www.kernel.org/doc/Documentation/cgroups/cgroups.txt) 
+
+### Collected Metrics
+This plugin has the ability to gather the following metrics:
+
+Namespace | Data Type | Description (optional)
+----------|-----------|-----------------------
+/intel/linux/docker/cpu_stats/cpu_usage/total_usage | uint64 | Total CPU time consumed
+/intel/linux/docker/cpu_stats/cpu_usage/usage_in_kernelmode | uint64 | CPU time consumed by tasks in system (kernel) mode
+/intel/linux/docker/cpu_stats/cpu_usage/usage_in_usermode | uint64 | CPU time consumed by tasks in user mode
+/intel/linux/docker/cpu_stats/cpu_usage/percpu_usage/\<N\> | uint64 | CPU time consumed on each N-th CPU by all tasks
+/intel/linux/docker/cpu_stats/throttling_data/periods | uint64 | number of period intervals that have elapsed
+/intel/linux/docker/cpu_stats/throttling_data/throttled_periods | uint64 | number of times tasks in a cgroup have been throttled
+/intel/linux/docker/cpu_stats/throttling_data/throttled_time | uint64 | total time duration for which tasks in a cgroup have been throttled
+/intel/linux/docker/memory_stats/cache | uint64 | page cache including tmpfs
+/intel/linux/docker/memory_stats/usage/usage | uint64 | reports the total current memory usage by processes in the cgroup
+/intel/linux/docker/memory_stats/usage/max_usage | uint64 | reports the maximum memory used by processes in the cgroup
+/intel/linux/docker/memory_stats/usage/failcnt | uint64 | reports the number of times that the memory limit has reached the value set in memory.limit_in_bytes
+/intel/linux/docker/memory_stats/swap_usage/usage | uint64 | reports the total swap space usage by processes in the cgroup
+/intel/linux/docker/memory_stats/swap_usage/max_usage | uint64 | reports the maximum swap space used by processes in the cgroup
+/intel/linux/docker/memory_stats/swap_usage/failcnt | uint64 | reports the number of times the swap space limit has reached the value set in memorysw.limit_in_bytes
+/intel/linux/docker/memory_stats/kernel_usage/usage | uint64 | reports the total kernel memory allocation by processes in the cgroup
+/intel/linux/docker/memory_stats/kernel_usage/max_usage | uint64 | reports the maximum kernel memory allocation by processes in the cgroup
+/intel/linux/docker/memory_stats/kernel_usage/failcnt | uint64 | reports the number of times the kernel memory allocation has reached the value set in kmem.limit_in_bytes
+/intel/linux/docker/memory_stats/stats/cache | uint64 | number of bytes of page cache memory
+/intel/linux/docker/memory_stats/stats/rss | uint64 | number of bytes of anonymous and swap cache memory
+/intel/linux/docker/memory_stats/stats/rss_huge | uint64 | number of bytes of anonymous transparent hugepages
+/intel/linux/docker/memory_stats/stats/mapped_file | uint64 | number of bytes of mapped file (includes tmpfs/shmem)
+/intel/linux/docker/memory_stats/stats/writeback | uint64 | number of bytes of file/anon cache that are queued for syncing to disk
+/intel/linux/docker/memory_stats/stats/pgpgin | uint64 | number of charging events to the memory cgroup
+/intel/linux/docker/memory_stats/stats/pgpgout | uint64 | number of uncharging events to the memory cgroup
+/intel/linux/docker/memory_stats/stats/pgfault | uint64 | number of page faults which happened since the creation of the cgroup
+/intel/linux/docker/memory_stats/stats/pgmajfault | uint64 | number of page major faults which happened since the creation of the cgroup
+/intel/linux/docker/memory_stats/stats/active_anon | uint64 | number of bytes of anonymous and swap cache memory on active LRU list
+/intel/linux/docker/memory_stats/stats/inactive_anon | uint64 | number of bytes of anonymous and swap cache memory on inactive LRU list
+/intel/linux/docker/memory_stats/stats/active_file | uint64 | number of bytes of file-backed memory on active LRU list
+/intel/linux/docker/memory_stats/stats/inactive_file | uint64 | number of bytes of file-backed memory on inactive LRU list
+/intel/linux/docker/memory_stats/stats/unevictable | uint64 | number of bytes of memory that cannot be reclaimed
+/intel/linux/docker/memory_stats/stats/hierarchical_memory_limit | uint64 | of bytes of memory limit with regard to hierarchy under which the memory cgroup is
+/intel/linux/docker/memory_stats/stats/total_\<counter\> | uint64 | hierarchical version of \<counter\>, which in addition to the cgroup's own value includes the sum of all hierarchical children's values of \<counter\>
+/intel/linux/docker/blkio_stats/io_service_bytes_recursive | uint64 | number of bytes transferred to/from the disk from all the descendant cgroups
+/intel/linux/docker/blkio_stats/io_service_recursive | uint64 | number of IOs (bio) issued to the disk from all the descendant cgroups
+/intel/linux/docker/blkio_stats/io_queue_recursive | uint64 | number of  requests queued up at any given instant from all the descendant cgroups
+/intel/linux/docker/blkio_stats/io_service_time_recursive | uint64 | amount of time between request dispatch and request completion from all the descendant cgroups
+/intel/linux/docker/blkio_stats/io_wait_time_recursive | uint64 | amount of time the IOs for this cgroup spent waiting in the scheduler queues for service from all the descendant cgroups
+/intel/linux/docker/blkio_stats/io_merged_recursive | uint64 | number of bios/requests merged into requests belonging to all the descendant cgroups
+/intel/linux/docker/blkio_stats/io_time_recursive | uint64 | disk time allocated to all devices from all the descendant cgroups
+/intel/linux/docker/blkio_stats/io_sectors_recursive | uint64 | number of sectors transferred to/from disk bys from all the descendant cgroups
+/intel/linux/docker/hugetlb_stats/\<hugepagesize\>/usage | uint64 | show current usage for "hugepagesize" hugetlb
+/intel/linux/docker/hugetlb_stats/\<hugepagesize\>/max_usage | uint64 | show max "hugepagesize" hugetlb usage recorded
+/intel/linux/docker/hugetlb_stats/\<hugepagesize\>/failcnt | uint64 | show the number of allocation failure due to HugeTLB limit
+
+## Community Support
+This repository is one of **many** plugins in the **Pulse Framework**: a powerful telemetry agent framework. To reach out to other uses, reach out to us on:
+
+* Pulse Gitter channel (@TODO Link)
+* Our Google Group (@TODO Link)
+
+The full project is at http://github.com:intelsdi-x/pulse.
+
+## Contributing
+We love contributions! :heart_eyes:
+
+There's more than one way to give back, from examples to blogs to code updates. See our recommended process in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+Pulse, along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
+
+## Acknowledgements
+List authors, co-authors and anyone you'd like to mention
+
+* Author: [Marcin Kroliik](https://github.com/marcin-krolik)
+
+**Thank you!** Your contribution is incredibly important to us.
