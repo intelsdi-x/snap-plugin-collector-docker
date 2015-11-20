@@ -36,7 +36,7 @@ Namespace | Data Type | Description (optional)
 /intel/linux/docker/cpu_stats/cpu_usage/total_usage | uint64 | Total CPU time consumed
 /intel/linux/docker/cpu_stats/cpu_usage/usage_in_kernelmode | uint64 | CPU time consumed by tasks in system (kernel) mode
 /intel/linux/docker/cpu_stats/cpu_usage/usage_in_usermode | uint64 | CPU time consumed by tasks in user mode
-/intel/linux/docker/cpu_stats/cpu_usage/percpu_usage/<N> | uint64 | CPU time consumed on each N-th CPU by all tasks
+/intel/linux/docker/cpu_stats/cpu_usage/percpu_usage/\<N\> | uint64 | CPU time consumed on each N-th CPU by all tasks
 /intel/linux/docker/cpu_stats/throttling_data/periods | uint64 | number of period intervals that have elapsed
 /intel/linux/docker/cpu_stats/throttling_data/throttled_periods | uint64 | number of times tasks in a cgroup have been throttled
 /intel/linux/docker/cpu_stats/throttling_data/throttled_time | uint64 | total time duration for which tasks in a cgroup have been throttled
@@ -65,7 +65,7 @@ Namespace | Data Type | Description (optional)
 /intel/linux/docker/memory_stats/stats/inactive_file | uint64 | number of bytes of file-backed memory on inactive LRU list
 /intel/linux/docker/memory_stats/stats/unevictable | uint64 | number of bytes of memory that cannot be reclaimed
 /intel/linux/docker/memory_stats/stats/hierarchical_memory_limit | uint64 | of bytes of memory limit with regard to hierarchy under which the memory cgroup is
-/intel/linux/docker/memory_stats/stats/total_<counter> | uint64 | hierarchical version of <counter>, which in addition to the cgroup's own value includes the sum of all hierarchical children's values of <counter>
+/intel/linux/docker/memory_stats/stats/total_\<counter\> | uint64 | hierarchical version of \<counter\>, which in addition to the cgroup's own value includes the sum of all hierarchical children's values of \<counter\>
 /intel/linux/docker/blkio_stats/io_service_bytes_recursive | uint64 | number of bytes transferred to/from the disk from all the descendant cgroups
 /intel/linux/docker/blkio_stats/io_service_recursive | uint64 | number of IOs (bio) issued to the disk from all the descendant cgroups
 /intel/linux/docker/blkio_stats/io_queue_recursive | uint64 | number of  requests queued up at any given instant from all the descendant cgroups
@@ -74,9 +74,9 @@ Namespace | Data Type | Description (optional)
 /intel/linux/docker/blkio_stats/io_merged_recursive | uint64 | number of bios/requests merged into requests belonging to all the descendant cgroups
 /intel/linux/docker/blkio_stats/io_time_recursive | uint64 | disk time allocated to all devices from all the descendant cgroups
 /intel/linux/docker/blkio_stats/io_sectors_recursive | uint64 | number of sectors transferred to/from disk bys from all the descendant cgroups
-/intel/linux/docker/hugetlb_stats/<hugepagesize>/usage | uint64 | show current usage for "hugepagesize" hugetlb
-/intel/linux/docker/hugetlb_stats/<hugepagesize>/max_usage | uint64 | show max "hugepagesize" hugetlb usage recorded
-/intel/linux/docker/hugetlb_stats/<hugepagesize>/failcnt | uint64 | show the number of allocation failure due to HugeTLB limit
+/intel/linux/docker/hugetlb_stats/\<hugepagesize\>/usage | uint64 | show current usage for "hugepagesize" hugetlb
+/intel/linux/docker/hugetlb_stats/\<hugepagesize\>/max_usage | uint64 | show max "hugepagesize" hugetlb usage recorded
+/intel/linux/docker/hugetlb_stats/\<hugepagesize\>/failcnt | uint64 | show the number of allocation failure due to HugeTLB limit
 
 ## Community Support
 This repository is one of **many** plugins in the **Pulse Framework**: a powerful telemetry agent framework. To reach out to other uses, reach out to us on:
