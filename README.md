@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-[![Build Status](https://magnum.travis-ci.com/intelsdi-x/snap-plugin-collector-docker.svg?token=HoxHq3yqBGpySzRd5XUm&branch=master)](https://magnum.travis-ci.com/intelsdi-x/snap-plugin-collector-docker)
+[![Build Status](https://travis-ci.com/intelsdi-x/snap-plugin-collector-docker.svg?token=HoxHq3yqBGpySzRd5XUm&branch=master)](https://travis-ci.com/intelsdi-x/snap-plugin-collector-docker)
 # snap Docker Collector Plugin
 
 Plugin collects runtime metrics from docker containers on host machine. It gathers information about resource usage and perfromance characteristics of running containers. 
