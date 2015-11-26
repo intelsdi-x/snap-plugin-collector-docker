@@ -16,8 +16,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-[![Build Status](https://magnum.travis-ci.com/intelsdi-x/pulse-plugin-collector-docker.svg?token=HoxHq3yqBGpySzRd5XUm&branch=master)](https://magnum.travis-ci.com/intelsdi-x/pulse-plugin-collector-docker)
-# Pulse Docker Collector Plugin
+[![Build Status](https://magnum.travis-ci.com/intelsdi-x/snap-plugin-collector-docker.svg?token=HoxHq3yqBGpySzRd5XUm&branch=master)](https://magnum.travis-ci.com/intelsdi-x/snap-plugin-collector-docker)
+# snap Docker Collector Plugin
 
 Plugin collects runtime metrics from docker containers on host machine. It gathers information about resource usage and perfromance characteristics of running containers. 
 
@@ -98,12 +98,12 @@ Namespace | Data Type | Description (optional)
 /intel/linux/docker/hugetlb_stats/\<hugepagesize\>/failcnt | uint64 | show the number of allocation failure due to HugeTLB limit
 
 ## Community Support
-This repository is one of **many** plugins in the **Pulse Framework**: a powerful telemetry agent framework. To reach out to other uses, reach out to us on:
+This repository is one of **many** plugins in the **snap Framework**: a powerful telemetry agent framework. To reach out to other uses, reach out to us on:
 
-* Pulse Gitter channel (@TODO Link)
+* snap Gitter channel (@TODO Link)
 * Our Google Group (@TODO Link)
 
-The full project is at http://github.com:intelsdi-x/pulse.
+The full project is at http://github.com:intelsdi-x/snap.
 
 ## Contributing
 We love contributions! :heart_eyes:
@@ -111,7 +111,7 @@ We love contributions! :heart_eyes:
 There's more than one way to give back, from examples to blogs to code updates. See our recommended process in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
-Pulse, along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
+snap, along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
 
 ## Acknowledgements
 List authors, co-authors and anyone you'd like to mention
