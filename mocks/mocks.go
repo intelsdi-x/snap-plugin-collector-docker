@@ -26,8 +26,8 @@ import (
 
 	"github.com/opencontainers/runc/libcontainer/cgroups"
 
-	. "github.com/intelsdi-x/pulse-plugin-collector-docker/client"
-	_ "github.com/intelsdi-x/pulse-plugin-collector-docker/tools"
+	. "github.com/intelsdi-x/snap-plugin-collector-docker/client"
+	_ "github.com/intelsdi-x/snap-plugin-collector-docker/tools"
 )
 
 type ClientMock struct {

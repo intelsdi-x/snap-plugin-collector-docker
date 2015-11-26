@@ -24,8 +24,8 @@ package main
 import (
 	"os"
 
-	"github.com/intelsdi-x/pulse-plugin-collector-docker/docker"
-	"github.com/intelsdi-x/pulse/control/plugin"
+	"github.com/intelsdi-x/snap-plugin-collector-docker/docker"
+	"github.com/intelsdi-x/snap/control/plugin"
 )
 
 func main() {
@@ -42,7 +42,7 @@ func main() {
 			docker.VERSION,
 			plugin.CollectorPluginType,
 			[]string{},
-			[]string{plugin.PulseGOBContentType},
+			[]string{plugin.SnapGOBContentType},
 			plugin.ConcurrencyCount(1)),
 		dockerPlugin,
 		os.Args[1],

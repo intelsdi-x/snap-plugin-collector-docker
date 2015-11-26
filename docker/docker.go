@@ -32,11 +32,11 @@ import (
 	"github.com/opencontainers/runc/libcontainer/cgroups"
 	"github.com/vektra/errors"
 
-	"github.com/intelsdi-x/pulse-plugin-collector-docker/client"
-	tls "github.com/intelsdi-x/pulse-plugin-collector-docker/tools"
-	"github.com/intelsdi-x/pulse-plugin-collector-docker/wrapper"
-	"github.com/intelsdi-x/pulse/control/plugin"
-	"github.com/intelsdi-x/pulse/control/plugin/cpolicy"
+	"github.com/intelsdi-x/snap-plugin-collector-docker/client"
+	tls "github.com/intelsdi-x/snap-plugin-collector-docker/tools"
+	"github.com/intelsdi-x/snap-plugin-collector-docker/wrapper"
+	"github.com/intelsdi-x/snap/control/plugin"
+	"github.com/intelsdi-x/snap/control/plugin/cpolicy"
 )
 
 const (

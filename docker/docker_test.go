@@ -30,12 +30,12 @@ import (
 
 	"github.com/opencontainers/runc/libcontainer/cgroups"
 
-	"github.com/intelsdi-x/pulse/control/plugin"
+	"github.com/intelsdi-x/snap/control/plugin"
 
-	. "github.com/intelsdi-x/pulse-plugin-collector-docker/client"
-	. "github.com/intelsdi-x/pulse-plugin-collector-docker/mocks"
-	. "github.com/intelsdi-x/pulse-plugin-collector-docker/tools"
-	. "github.com/intelsdi-x/pulse-plugin-collector-docker/wrapper"
+	. "github.com/intelsdi-x/snap-plugin-collector-docker/client"
+	. "github.com/intelsdi-x/snap-plugin-collector-docker/mocks"
+	. "github.com/intelsdi-x/snap-plugin-collector-docker/tools"
+	. "github.com/intelsdi-x/snap-plugin-collector-docker/wrapper"
 )
 
 func TestExtendDockerIdProper(t *testing.T) {

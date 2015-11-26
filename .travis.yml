@@ -7,16 +7,16 @@ before_install:
 - cp .netrc ~
 - chmod 600 .netrc
 - go get github.com/tools/godep
-- if [ ! -d $PULSE_PLUGIN_SOURCE ]; then mkdir -p $HOME/gopath/src/github.com/intelsdi-x; ln -s $TRAVIS_BUILD_DIR $PULSE_PLUGIN_SOURCE; fi # CI for forks not from intelsdi-x
+- if [ ! -d $SNAP_PLUGIN_SOURCE ]; then mkdir -p $HOME/gopath/src/github.com/intelsdi-x; ln -s $TRAVIS_BUILD_DIR $SNAP_PLUGIN_SOURCE; fi # CI for forks not from intelsdi-x
 env:
   global:
-    - PULSE_PLUGIN_SOURCE=/home/travis/gopath/src/github.com/intelsdi-x/pulse-plugin-collector-docker
+    - SNAP_PLUGIN_SOURCE=/home/travis/gopath/src/github.com/intelsdi-x/snap-plugin-collector-docker
   matrix:
     - TEST=unit
 install:
 - export TMPDIR=$HOME/tmp
 - mkdir -p $TMPDIR
-- cd $PULSE_PLUGIN_SOURCE # change dir into source
+- cd $SNAP_PLUGIN_SOURCE # change dir into source
 - make deps
 script:
 - make check TEST=$TEST 2>&1 # Run test suite
