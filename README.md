@@ -23,7 +23,7 @@ limitations under the License.
 
 Plugin collects runtime metrics from docker containers on host machine. It gathers information about resource usage and perfromance characteristics of running containers. 
 
-It's used in the [snap framework](http://github.com:intelsdi-x/snap).
+It's used in the [snap framework](http://github.com/intelsdi-x/snap).
 
 1. [Getting Started](#getting-started)
   * [Installation](#installation)
