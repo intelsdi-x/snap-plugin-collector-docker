@@ -117,7 +117,7 @@ Namespace | Data Type | Description (optional)
 /intel/linux/docker/hugetlb_stats/\<hugepagesize\>/failcnt | uint64 | show the number of allocation failure due to HugeTLB limit
 
 ### Roadmap
-There isn't a current roadmap for this plugin, but it is in active development. As we launch this plugin, we do not have any outstanding requirements for the next release. If you have a feature request, please add it as an [issue](https://github.com/intelsdi-x/snap-plugin-collector-psutil/issues/new) and/or submit a [pull request](https://github.com/intelsdi-x/snap-plugin-collector-docker/pulls).
+There isn't a current roadmap for this plugin, but it is in active development. As we launch this plugin, we do not have any outstanding requirements for the next release. If you have a feature request, please add it as an [issue](https://github.com/intelsdi-x/snap-plugin-collector-docker/issues/new) and/or submit a [pull request](https://github.com/intelsdi-x/snap-plugin-collector-docker/pulls).
 
 ## Community Support
 This repository is one of **many** plugins in the **snap Framework**: a powerful telemetry agent framework. See the full project at http://github.com/intelsdi-x/snap To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support)
@@ -130,7 +130,7 @@ We love contributions!
 There's more than one way to give back, from examples to blogs to code updates. See our recommended process in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
-[snap](http://github.com:intelsdi-x/snap), along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
+[snap](http://github.com/intelsdi-x/snap), along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
 
 ## Acknowledgements
 
