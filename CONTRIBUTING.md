@@ -31,7 +31,7 @@ Once you're ready to contribute code back to this repo, start with these steps:
 * Contributors will review your pull request, suggest changes, and merge it when it’s ready and/or offer feedback
 * To report a bug or issue, please open a new issue against this repository
 
-If you have questions feel free to contact the [maintainers]((https://github.com/intelsdi-x/snap/README.md#maintainers).
+If you have questions feel free to contact the [maintainers](https://github.com/intelsdi-x/snap/blob/master/README.md#maintainers).
 
 ## Contributing Examples
 The most immediately helpful way you can benefit this project is by cloning the repository, adding some further examples and submitting a pull request. 
