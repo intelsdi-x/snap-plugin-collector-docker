@@ -39,6 +39,9 @@ It's used in the [snap framework](http://github.com/intelsdi-x/snap).
 
 In order to use this plugin you need docker engine installed. Visit [Install Docker Engine](https://docs.docker.com/engine/installation/) for detailed instructions how to do it.
 
+### Operating systems
+* Linux/amd64
+
 ### Installation
 
 You can get the pre-built binaries for your OS and architecture at snap's [GitHub Releases](https://github.com/intelsdi-x/snap/releases) page.
