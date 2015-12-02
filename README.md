@@ -122,8 +122,6 @@ There isn't a current roadmap for this plugin, but it is in active development. 
 ## Community Support
 This repository is one of **many** plugins in the **snap Framework**: a powerful telemetry agent framework. See the full project at http://github.com/intelsdi-x/snap To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support)
 
-The full project is at http://github.com:intelsdi-x/snap.
-
 ## Contributing
 We love contributions!
 
