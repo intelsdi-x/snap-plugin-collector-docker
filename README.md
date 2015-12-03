@@ -19,7 +19,7 @@ limitations under the License.
 
 [![Build Status](https://travis-ci.com/intelsdi-x/snap-plugin-collector-docker.svg?token=HoxHq3yqBGpySzRd5XUm&branch=master)](https://travis-ci.com/intelsdi-x/snap-plugin-collector-docker)
 
-# snap Docker Collector Plugin
+# snap collector plugin - Docker
 
 Plugin collects runtime metrics from docker containers on host machine. It gathers information about resource usage and perfromance characteristics of running containers. 
 
@@ -118,6 +118,77 @@ Namespace | Data Type | Description (optional)
 /intel/linux/docker/hugetlb_stats/\<hugepagesize\>/usage | uint64 | show current usage for "hugepagesize" hugetlb
 /intel/linux/docker/hugetlb_stats/\<hugepagesize\>/max_usage | uint64 | show max "hugepagesize" hugetlb usage recorded
 /intel/linux/docker/hugetlb_stats/\<hugepagesize\>/failcnt | uint64 | show the number of allocation failure due to HugeTLB limit
+
+### Examples
+
+```
+$ docker ps
+
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+7720efd76bb8        ubuntu              "/bin/bash"         35 minutes ago      Up 35 minutes                           prickly_spence
+ad5221e8ae73        ubuntu              "/bin/bash"         36 minutes ago      Up 36 minutes                           suspicious_mirzakhani
+```
+
+In one terminal window: Running snapd with auto discovery, log level 1, and trust disabled
+```
+$ $SNAP_PATH/bin/snapd -l 1 -t 0 -a ../snap-plugin-collector-docker/build/rootfs/:build/plugin/
+```
+Create task manifest for writing to a file (e.g. docker-file.json):
+```json
+{
+    "version": 1,
+    "schedule": {
+        "type": "simple",
+        "interval": "1s"
+    },
+    "workflow": {
+        "collect": {
+            "metrics": {
+                "/intel/linux/docker/ad5221e8ae73/cpu_stats/cpu_usage/total_usage":{},
+                "/intel/linux/docker/ad5221e8ae73/memory_stats/usage/usage": {},
+                "/intel/linux/docker/7720efd76bb8/memory_stats/usage/usage": {},
+                "/intel/linux/docker/ad5221e8ae73/blkio_stats/io_serviced_recursive/0/value": {}
+            },
+            "config": {
+                "/intel/mock": {
+                    "user": "root",
+                    "password": "secret"
+                }
+            },
+            "process": [
+                {
+                    "plugin_name": "passthru",                    
+                    "process": null,
+                    "publish": [
+                        {
+                            "plugin_name": "file",                            
+                            "config": {
+                                "file": "/tmp/snap-docker-file.log"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
+```
+Another terminal window:
+```
+$ $SNAP_PATH/bin/snapctl task create -t docker-file.json
+```
+/tmp/snap-docker-file.log
+```
+2015-12-02 23:43:50.632800682 -0800 PST|[intel linux docker 7720efd76bb8 memory_stats usage usage]|536576|hostname/7720efd76bb8
+2015-12-02 23:43:50.636374575 -0800 PST|[intel linux docker ad5221e8ae73 blkio_stats io_serviced_recursive 0 value]|220|hostname/ad5221e8ae73
+2015-12-02 23:43:50.639577224 -0800 PST|[intel linux docker ad5221e8ae73 memory_stats usage usage]|4304896|hostname/ad5221e8ae73
+2015-12-02 23:43:50.642809595 -0800 PST|[intel linux docker ad5221e8ae73 cpu_stats cpu_usage total_usage]|36801420|hostname/ad5221e8ae73
+2015-12-02 23:43:51.634380642 -0800 PST|[intel linux docker 7720efd76bb8 memory_stats usage usage]|536576|hostname/7720efd76bb8
+2015-12-02 23:43:51.638242838 -0800 PST|[intel linux docker ad5221e8ae73 blkio_stats io_serviced_recursive 0 value]|220|hostname/ad5221e8ae73
+2015-12-02 23:43:51.644047525 -0800 PST|[intel linux docker ad5221e8ae73 memory_stats usage usage]|4304896|hostname/ad5221e8ae73
+2015-12-02 23:43:51.647942982 -0800 PST|[intel linux docker ad5221e8ae73 cpu_stats cpu_usage total_usage]|36801420|hostname/ad5221e8ae73
+2015-12-02 23:43:52.633682886 -0800 PST|[intel linux docker 7720efd76bb8 memory_stats usage usage]|536576|hostname/7720efd76bb8
+```
 
 ### Roadmap
 There isn't a current roadmap for this plugin, but it is in active development. As we launch this plugin, we do not have any outstanding requirements for the next release. If you have a feature request, please add it as an [issue](https://github.com/intelsdi-x/snap-plugin-collector-docker/issues/new) and/or submit a [pull request](https://github.com/intelsdi-x/snap-plugin-collector-docker/pulls).
