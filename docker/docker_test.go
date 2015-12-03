@@ -232,14 +232,14 @@ func TestCollectMetricsWildcard(t *testing.T) {
 			mockTools.On("GetValueByNamespace", mock.AnythingOfType("*cgroups.Stats"), mock.Anything).Return(43)
 
 			d := &docker{
-				stats:          stats,
-				client:         mockClient,
-				tools:          mockTools,
+				stats:  stats,
+				client: mockClient,
+				tools:  mockTools,
 				containersInfo: []ContainerInfo{
 					ContainerInfo{Id: longDockerId1},
 					ContainerInfo{Id: longDockerId2}},
-				groupWrap:      mockWrapper,
-				hostname:       "",
+				groupWrap: mockWrapper,
+				hostname:  "",
 			}
 
 			Convey("When CollectMetric is called", func() {

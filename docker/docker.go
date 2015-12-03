@@ -122,36 +122,69 @@ func (d *docker) extendDockerId(shortId string) (string, error) {
 
 func (d *docker) CollectMetrics(metricTypes []plugin.PluginMetricType) ([]plugin.PluginMetricType, error) {
 
-	metrics := make([]plugin.PluginMetricType, len(metricTypes))
+	metrics := []plugin.PluginMetricType{}
 
-	for i, metricType := range metricTypes {
-		// example ns: /intel/linux/docker/31068893a2bc/cpu_stats/throttling_data/periods
+	for _, metricType := range metricTypes {
+
 		ns := metricType.Namespace()
 
-		// extracted docker id from namespace is extended to long one
-		dockerId, err := d.extendDockerId(ns[3])
-		if err != nil {
-			return nil, err
-		}
+		// wildcard for container ID
+		if ns[3] == "*" {
+			// example ns: /intel/linux/docker/*/cpu_stats/throttling_data/priods
+			for _, container := range d.containersInfo {
 
-		// long id is required to get stats for docker
-		if err := d.getStats(dockerId); err != nil {
-			return nil, err
-		}
+				dockerId := container.Id
+				// get short version of container ID
+				ns[3] = dockerId[:12]
 
-		// only "cgroup.Stats" part of namespace is sent to retrieve value (cpu_stats/throttling_data/periods)
-		metrics[i].Data_ = d.tools.GetValueByNamespace(d.stats, ns[4:])
-		metrics[i].Timestamp_ = time.Now()
-		metrics[i].Namespace_ = ns
-		metrics[i].Version_ = VERSION
-		metrics[i].Source_ = filepath.Join(d.hostname, ns[3])
+				// copy namespace so it doesn't get altered each time
+				nscopy := make([]string, len(ns))
+				copy(nscopy, ns)
+
+				if err := d.getStats(dockerId); err != nil {
+					return nil, err
+				}
+
+				// only "cgroup.Stats" part of namespace is sent to retrieve value (cpu_stats/throttling_data/periods)
+				mt := plugin.PluginMetricType{
+					Data_:      d.tools.GetValueByNamespace(d.stats, ns[4:]),
+					Timestamp_: time.Now(),
+					Namespace_: nscopy,
+					Version_:   VERSION,
+					Source_:    filepath.Join(d.hostname, ns[3]),
+				}
+				metrics = append(metrics, mt)
+			}
+		} else {
+			// example ns: /intel/linux/docker/31068893a2bc/cpu_stats/throttling_data/priods
+
+			// extracted docker id from namespace is extended to long one
+			dockerId, err := d.extendDockerId(ns[3])
+			if err != nil {
+				return nil, err
+			}
+
+			// long id is required to get stats for docker
+			if err := d.getStats(dockerId); err != nil {
+				return nil, err
+			}
+
+			// only "cgroup.Stats" part of namespace is sent to retrieve value (cpu_stats/throttling_data/periods)
+			mt := plugin.PluginMetricType{
+				Data_:      d.tools.GetValueByNamespace(d.stats, ns[4:]),
+				Timestamp_: time.Now(),
+				Namespace_: ns,
+				Version_:   VERSION,
+				Source_:    filepath.Join(d.hostname, ns[3]),
+			}
+			metrics = append(metrics, mt)
+		}
 	}
 
 	return metrics, nil
 }
 
 func (d *docker) GetMetricTypes(_ plugin.PluginConfigType) ([]plugin.PluginMetricType, error) {
-
 	var namespaces []string
 	var metricTypes []plugin.PluginMetricType
 
@@ -167,6 +200,14 @@ func (d *docker) GetMetricTypes(_ plugin.PluginConfigType) ([]plugin.PluginMetri
 
 		// parse map to get namespace strings
 		d.tools.Map2Namespace(jmap, container.Id[:12], &namespaces)
+	}
+
+	// wildcard for container ID
+	if len(d.containersInfo) > 0 {
+		jsondata, _ := json.Marshal(d.stats)
+		var jmap map[string]interface{}
+		_ = json.Unmarshal(jsondata, &jmap)
+		d.tools.Map2Namespace(jmap, "*", &namespaces)
 	}
 
 	for _, namespace := range namespaces {
