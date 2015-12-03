@@ -21,7 +21,7 @@ limitations under the License.
 
 # snap collector plugin - Docker
 
-Plugin collects runtime metrics from docker containers on host machine. It gathers information about resource usage and perfromance characteristics of running containers. 
+This plugin collects runtime metrics from Docker containers on host machine. It gathers information about resource usage and performance characteristics of running containers. 
 
 It's used in the [snap framework](http://github.com/intelsdi-x/snap).
 
@@ -37,7 +37,7 @@ It's used in the [snap framework](http://github.com/intelsdi-x/snap).
 
 ## Getting Started
 
-In order to use this plugin you need docker engine installed. Visit [Install Docker Engine](https://docs.docker.com/engine/installation/) for detailed instructions how to do it.
+In order to use this plugin you need Docker Engine installed. Visit [Install Docker Engine](https://docs.docker.com/engine/installation/) for detailed instructions how to do it.
 
 ### Operating systems
 * Linux/amd64
@@ -58,7 +58,14 @@ Build the plugin by running make within the cloned repo:
 ```
 $ make
 ```
+(It may take a while to pull dependencies if you don't have them already.)
+
 This builds the plugin in `/build/rootfs/`
+
+#### Run tests
+```
+./scripts/test.sh unit
+```
 
 ### Configuration and Usage
 * Set up the [snap framework](https://github.com/intelsdi-x/snap/blob/master/README.md#getting-started)
@@ -68,6 +75,10 @@ This builds the plugin in `/build/rootfs/`
 All metrics gathered by this plugin are exposed by [cgroups](https://www.kernel.org/doc/Documentation/cgroups/cgroups.txt) 
 
 ## Documentation
+There are a number of other resources you can review to learn to use this plugin:
+* [Docker Documentation](https://docs.docker.com/)
+* [snap Docker examples](#examples)
+* [snap docker_test.go](docker/docker_test.go)
 
 ### Collected Metrics
 This plugin has the ability to gather the following metrics:
