@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-[![Build Status](https://travis-ci.com/intelsdi-x/snap-plugin-collector-docker.svg?token=HoxHq3yqBGpySzRd5XUm&branch=master)](https://travis-ci.com/intelsdi-x/snap-plugin-collector-docker)
+[![Build Status](https://travis-ci.org/intelsdi-x/snap-plugin-collector-docker.svg?branch=master)](https://travis-ci.com/intelsdi-x/snap-plugin-collector-docker)
 
 # snap collector plugin - Docker
 
