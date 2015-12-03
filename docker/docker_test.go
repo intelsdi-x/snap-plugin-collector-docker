@@ -174,7 +174,6 @@ func TestCollectMetrics(t *testing.T) {
 
 			mockStats.On("GetStats", mock.AnythingOfType("string"), stats).Return(nil)
 
-			// TODO - sprawdzic jak mozna by wykorzystac
 			mockTools.On("GetValueByNamespace", mock.AnythingOfType("*cgroups.Stats"), mock.Anything).Return(43)
 
 			d := &docker{
@@ -206,6 +205,64 @@ func TestCollectMetrics(t *testing.T) {
 	})
 }
 
+func TestCollectMetricsWildcard(t *testing.T) {
+
+	Convey("Given * wildcard in requested metric type", t, func() {
+
+		mountPoint := "cgroup/mount/point/path"
+		longDockerId1 := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
+		longDockerId2 := "0987654321yz9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
+
+		ns := []string{NS_VENDOR, NS_CLASS, NS_PLUGIN, "*", "cpu_stats", "cpu_usage", "total_usage"}
+		metricTypes := []plugin.PluginMetricType{plugin.PluginMetricType{Namespace_: ns}}
+
+		Convey("and docker plugin intitialized", func() {
+
+			stats := cgroups.NewStats()
+
+			mockClient := new(ClientMock)
+			mockStats := new(StatsMock)
+			mockTools := new(ToolsMock)
+			mockWrapper := map[string]Stats{"cpu": mockStats}
+
+			mockClient.On("FindCgroupMountpoint", "cpu").Return(mountPoint, nil)
+
+			mockStats.On("GetStats", mock.AnythingOfType("string"), stats).Return(nil)
+
+			mockTools.On("GetValueByNamespace", mock.AnythingOfType("*cgroups.Stats"), mock.Anything).Return(43)
+
+			d := &docker{
+				stats:          stats,
+				client:         mockClient,
+				tools:          mockTools,
+				containersInfo: []ContainerInfo{
+					ContainerInfo{Id: longDockerId1},
+					ContainerInfo{Id: longDockerId2}},
+				groupWrap:      mockWrapper,
+				hostname:       "",
+			}
+
+			Convey("When CollectMetric is called", func() {
+				mts, err := d.CollectMetrics(metricTypes)
+
+				Convey("Then error should not be reported", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("Two metrics should be returned", func() {
+					So(len(mts), ShouldEqual, 2)
+				})
+
+				Convey("Metric value should be correctly set", func() {
+					So(mts[0].Data(), ShouldEqual, 43)
+					So(mts[1].Data(), ShouldEqual, 43)
+				})
+			})
+
+		})
+	})
+}
+
 func TestGetMetrics(t *testing.T) {
 	Convey("Given docker id and running containers info", t, func() {
 		longDockerId := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
@@ -220,12 +277,15 @@ func TestGetMetrics(t *testing.T) {
 			mockWrapper := map[string]Stats{"cpu": mockStats}
 
 			mockTools.On(
-				"Map2Namespace", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("*[]string")).Return().Run(
+				"Map2Namespace",
+				mock.Anything,
+				mock.AnythingOfType("string"),
+				mock.AnythingOfType("*[]string"),
+			).Return().Run(
 				func(args mock.Arguments) {
 					id := args.String(1)
 					ns := args.Get(2).(*[]string)
-
-					*ns = append(*ns, filepath.Join(id[:12], "cpu_stats/cpu_usage/total_usage"))
+					*ns = append(*ns, filepath.Join(id, "cpu_stats/cpu_usage/total_usage"))
 				})
 
 			mockClient.On("FindCgroupMountpoint", "cpu").Return(mountPoint, nil)
@@ -247,8 +307,8 @@ func TestGetMetrics(t *testing.T) {
 					So(err, ShouldBeNil)
 				})
 
-				Convey("Then one metric should be returned", func() {
-					So(len(mts), ShouldEqual, 1)
+				Convey("Then one explicit metric should be returned and wildcard docker id metric", func() {
+					So(len(mts), ShouldEqual, 2)
 				})
 
 				Convey("Then metric namespace should be correctly set", func() {
