@@ -28,7 +28,6 @@ import (
 	"strconv"
 	"strings"
 
-	_ "github.com/docker/docker/vendor/src/github.com/opencontainers/runc/libcontainer/cgroups"
 	"github.com/oleiade/reflections"
 )
 
