@@ -4,8 +4,6 @@ go:
 - 1.4.2
 - 1.5
 before_install:
-- cp .netrc ~
-- chmod 600 .netrc
 - go get github.com/tools/godep
 - if [ ! -d $SNAP_PLUGIN_SOURCE ]; then mkdir -p $HOME/gopath/src/github.com/intelsdi-x; ln -s $TRAVIS_BUILD_DIR $SNAP_PLUGIN_SOURCE; fi # CI for forks not from intelsdi-x
 env:

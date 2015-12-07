@@ -30,6 +30,9 @@ It's used in the [snap framework](http://github.com/intelsdi-x/snap).
   * [Configuration and Usage](#configuration-and-usage)
 2. [Documentation](#documentation)
   * [Collected Metrics](#collected-metrics)
+  * [Examples](#examples)
+  	* [Darwin](#darwin)
+  	* [Linux](#linux)
 3. [Community Support](#community-support)
 4. [Contributing](#contributing)
 5. [License](#license-and-authors)
@@ -41,6 +44,7 @@ In order to use this plugin you need Docker Engine installed. Visit [Install Doc
 
 ### Operating systems
 * Linux/amd64
+* Darwin/amd64 (Needs [docker-machine](https://docs.docker.com/v1.8/installation/mac/))
 
 ### Installation
 
@@ -64,7 +68,7 @@ This builds the plugin in `/build/rootfs/`
 
 #### Run tests
 ```
-./scripts/test.sh unit
+$ ./scripts/test.sh unit
 ```
 
 ### Configuration and Usage
@@ -72,15 +76,17 @@ This builds the plugin in `/build/rootfs/`
 * Ensure `$SNAP_PATH` is exported  
 `export SNAP_PATH=$GOPATH/src/github.com/intelsdi-x/snap/build`
 
-All metrics gathered by this plugin are exposed by [cgroups](https://www.kernel.org/doc/Documentation/cgroups/cgroups.txt) 
-
 ## Documentation
 There are a number of other resources you can review to learn to use this plugin:
 * [Docker Documentation](https://docs.docker.com/)
+* [Docker Runtime Metrics](https://docs.docker.com/engine/articles/runmetrics/)
 * [snap Docker examples](#examples)
 * [snap docker_test.go](docker/docker_test.go)
+* [snap Docker JSON task example](examples/tasks/docker-file.json)
 
 ### Collected Metrics
+All metrics gathered by this plugin are exposed by [cgroups](https://www.kernel.org/doc/Documentation/cgroups/cgroups.txt).  
+
 This plugin has the ability to gather the following metrics:
 
 Namespace | Data Type | Description (optional)
@@ -131,6 +137,48 @@ Namespace | Data Type | Description (optional)
 /intel/linux/docker/hugetlb_stats/\<hugepagesize\>/failcnt | uint64 | show the number of allocation failure due to HugeTLB limit
 
 ### Examples
+#### Darwin
+
+Set docker-machine env.
+```
+$ eval "$(docker-machine env <dockerMachineName>)"
+```
+If this is your directory structure:
+```
+$GOPATH/src/github.com/intelsdi-x/snap/
+$GOPATH/src/github.com/intelsdi-x/snap-plugin-collector-docker/
+```
+
+In the `$GOPATH/src/github.com/intelsdi-x/` directory run the following:
+```
+$ snap-plugin-collector-docker/scripts/run_test_snap_plugin_collector_docker_darwin.sh 
+```
+
+This creates an image with your local directory of snap and snap-plugin-collector-docker in it using [`scripts/Dockerfile`](scripts/Dockerfile). From here you can run snap to gather container statistics. The [Dockerfile](http://docs.docker.com/engine/reference/builder/) assumes you have the snap-plugin-collector-docker repository locally. If you're using pre-built binaries, they need to be located somewhere in either `/snap` or `/snap-plugin-collector-docker`. 
+
+```
+$ docker images                                                                                   ✭
+REPOSITORY                                TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+intelsdi-x/snap-plugin-collector-docker   latest              44589b958838        14 hours ago        993.4 MB
+```
+After your image is created [`docker run`](https://docs.docker.com/engine/reference/run/) is used to create and enter a container with your image (this is included in the run script but the command will need to be run if you exit the container):
+```
+$ docker run -it -v /proc:/hostproc -v /sys/fs/cgroup:/sys/fs/cgroup  -v /var/run/docker.sock:/var/run/docker.sock -v ./static-docker:/usr/bin/docker <imageID/repositoryName> bash
+```
+
+```
+$ docker ps
+
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+6f98ccadbe76        7bf7678d93b1        "bash"              2 days ago          Up 4 hours                              adoring_colden
+```
+In another terminal run the following to enter your container again:
+```
+$ docker exec -it <containerID> bash
+```
+Now you have a terminal window to run snapd and one for snapctl and can continue into the Linux example. 
+
+#### Linux
 
 ```
 $ docker ps
@@ -140,11 +188,11 @@ CONTAINER ID        IMAGE               COMMAND             CREATED             
 ad5221e8ae73        ubuntu              "/bin/bash"         36 minutes ago      Up 36 minutes                           suspicious_mirzakhani
 ```
 
-In one terminal window: Running snapd with auto discovery, log level 1, and trust disabled
+In one terminal window in the /snap directory: Running snapd with auto discovery, log level 1, and trust disabled
 ```
 $ $SNAP_PATH/bin/snapd -l 1 -t 0 -a ../snap-plugin-collector-docker/build/rootfs/:build/plugin/
 ```
-Create task manifest for writing to a file (e.g. docker-file.json):
+Create task manifest for writing to a file. You can also use * (wildcard) as the container ID to list that metric for all containers. See [`examples/tasks/docker-file.json`](examples/tasks/docker-file.json):
 ```json
 {
     "version": 1,
@@ -184,7 +232,7 @@ Create task manifest for writing to a file (e.g. docker-file.json):
     }
 }
 ```
-Another terminal window:
+Another terminal window, also in /snap:
 ```
 $ $SNAP_PATH/bin/snapctl task create -t docker-file.json
 ```
@@ -205,7 +253,7 @@ $ $SNAP_PATH/bin/snapctl task create -t docker-file.json
 There isn't a current roadmap for this plugin, but it is in active development. As we launch this plugin, we do not have any outstanding requirements for the next release. If you have a feature request, please add it as an [issue](https://github.com/intelsdi-x/snap-plugin-collector-docker/issues/new) and/or submit a [pull request](https://github.com/intelsdi-x/snap-plugin-collector-docker/pulls).
 
 ## Community Support
-This repository is one of **many** plugins in the **snap Framework**: a powerful telemetry agent framework. See the full project at http://github.com/intelsdi-x/snap To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support)
+This repository is one of **many** plugins in the **snap framework**: a powerful telemetry framework. See the full project at http://github.com/intelsdi-x/snap To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support)
 
 ## Contributing
 We love contributions!
