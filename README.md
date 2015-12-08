@@ -21,7 +21,7 @@ limitations under the License.
 
 # snap collector plugin - Docker
 
-This plugin collects runtime metrics from Docker containers on host machine. It gathers information about resource usage and performance characteristics of running containers. 
+This plugin collects runtime metrics from Docker containers on the Docker host machine. It gathers information about resource usage and performance characteristics of running containers. 
 
 It's used in the [snap framework](http://github.com/intelsdi-x/snap).
 
