@@ -47,7 +47,7 @@ const (
 	// namespace plugin name
 	NS_PLUGIN = "docker"
 	// version of plugin
-	VERSION = 1
+	VERSION = 2
 	// mount info
 	mountInfo = "/proc/self/mountinfo"
 )

@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/intelsdi-x/snap-plugin-collector-docker",
-	"GoVersion": "go1.5.1",
+	"GoVersion": "go1.5",
 	"Packages": [
 		"./..."
 	],
@@ -9,6 +9,10 @@
 			"ImportPath": "github.com/Sirupsen/logrus",
 			"Comment": "v0.7.3",
 			"Rev": "55eb11d21d2a31a3cc93838241d04800f52e823d"
+		},
+		{
+			"ImportPath": "github.com/davecgh/go-spew/spew",
+			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/mount",
@@ -25,24 +29,37 @@
 			"Rev": "412c004d923b7b89701e7a1632de83f843657a03"
 		},
 		{
+			"ImportPath": "github.com/gopherjs/gopherjs/js",
+			"Rev": "9e79153c1c8dfa135136342df1ee0e8588f6d0d5"
+		},
+		{
 			"ImportPath": "github.com/intelsdi-x/snap/control/plugin",
-			"Rev": "6fc20b4ba656e306d739b9872cd80e589c1d9c40"
+			"Comment": "v0.11.0-beta",
+			"Rev": "42d9567651258bba268d94701eb171458e459645"
 		},
 		{
 			"ImportPath": "github.com/intelsdi-x/snap/core",
-			"Rev": "6fc20b4ba656e306d739b9872cd80e589c1d9c40"
+			"Comment": "v0.11.0-beta",
+			"Rev": "42d9567651258bba268d94701eb171458e459645"
 		},
 		{
 			"ImportPath": "github.com/intelsdi-x/snap/pkg/ctree",
-			"Rev": "6fc20b4ba656e306d739b9872cd80e589c1d9c40"
+			"Comment": "v0.11.0-beta",
+			"Rev": "42d9567651258bba268d94701eb171458e459645"
 		},
 		{
 			"ImportPath": "github.com/intelsdi-x/snap/pkg/schedule",
-			"Rev": "6fc20b4ba656e306d739b9872cd80e589c1d9c40"
+			"Comment": "v0.11.0-beta",
+			"Rev": "42d9567651258bba268d94701eb171458e459645"
 		},
 		{
 			"ImportPath": "github.com/intelsdi-x/snap/scheduler/wmap",
-			"Rev": "6fc20b4ba656e306d739b9872cd80e589c1d9c40"
+			"Comment": "v0.11.0-beta",
+			"Rev": "42d9567651258bba268d94701eb171458e459645"
+		},
+		{
+			"ImportPath": "github.com/jtolds/gls",
+			"Rev": "8ddce2a84170772b95dd5d576c48d517b22cac63"
 		},
 		{
 			"ImportPath": "github.com/oleiade/reflections",
@@ -63,6 +80,34 @@
 			"ImportPath": "github.com/opencontainers/runc/libcontainer/system",
 			"Comment": "v0.0.6-45-g4c767d7",
 			"Rev": "4c767d7046a79a7cf29b810742e5f7f2564f2d0c"
+		},
+		{
+			"ImportPath": "github.com/pmezard/go-difflib/difflib",
+			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
+		},
+		{
+			"ImportPath": "github.com/smartystreets/assertions",
+			"Comment": "1.5.0-409-g5de9043",
+			"Rev": "5de9043ec1a39cc97edc838ef7236538a55b30a4"
+		},
+		{
+			"ImportPath": "github.com/smartystreets/goconvey/convey",
+			"Comment": "1.6.0-10-g995f5b2",
+			"Rev": "995f5b2e021c69b8b028ba6d0b05c1dd500783db"
+		},
+		{
+			"ImportPath": "github.com/stretchr/objx",
+			"Rev": "1a9d0bb9f541897e62256577b352fdbc1fb4fd94"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Comment": "v1.1.3-2-g9f9027f",
+			"Rev": "9f9027faeb0dad515336ed2f28317f9f8f527ab4"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/mock",
+			"Comment": "v1.1.3-2-g9f9027f",
+			"Rev": "9f9027faeb0dad515336ed2f28317f9f8f527ab4"
 		},
 		{
 			"ImportPath": "github.com/vektra/errors",
