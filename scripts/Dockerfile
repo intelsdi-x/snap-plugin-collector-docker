@@ -6,7 +6,6 @@ RUN apt-get update && \
     apt-get -y install vim
 RUN go get github.com/tools/godep && \
     go get golang.org/x/tools/cmd/goimports && \
-    go get golang.org/x/tools/cmd/vet && \
     go get golang.org/x/tools/cmd/cover && \
     go get github.com/smartystreets/goconvey
 WORKDIR /go/src/github.com/intelsdi-x/
