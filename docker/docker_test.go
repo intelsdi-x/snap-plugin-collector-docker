@@ -31,6 +31,7 @@ import (
 	"github.com/opencontainers/runc/libcontainer/cgroups"
 
 	"github.com/intelsdi-x/snap/control/plugin"
+	"github.com/intelsdi-x/snap/core"
 
 	. "github.com/intelsdi-x/snap-plugin-collector-docker/client"
 	. "github.com/intelsdi-x/snap-plugin-collector-docker/mocks"
@@ -38,11 +39,11 @@ import (
 	. "github.com/intelsdi-x/snap-plugin-collector-docker/wrapper"
 )
 
-func TestExtendDockerIdProper(t *testing.T) {
+func TestExtendDockerIDProper(t *testing.T) {
 
 	Convey("Given short docker id", t, func() {
 
-		shortId := "1234567890ab"
+		shortID := "1234567890ab"
 
 		Convey("and containers info with proper extension", func() {
 
@@ -56,25 +57,25 @@ func TestExtendDockerIdProper(t *testing.T) {
 
 			Convey("When docker id is extended", func() {
 				d := docker{containersInfo: ci}
-				longId, err := d.extendDockerId(shortId)
+				longID, err := d.extendDockerID(shortID)
 
 				Convey("Then error should not be reported", func() {
 					So(err, ShouldBeNil)
 				})
 
 				Convey("Then proper long id is returned", func() {
-					So(longId, ShouldEqual, proper)
+					So(longID, ShouldEqual, proper)
 				})
 			})
 		})
 	})
 }
 
-func TestExtendDockerIdWrong(t *testing.T) {
+func TestExtendDockerIDWrong(t *testing.T) {
 
 	Convey("Given incorrect short docker id", t, func() {
 
-		wrongShortId := "wrongid12334"
+		wrongShortID := "wrongid12334"
 
 		Convey("and containers info with proper extension", func() {
 
@@ -88,14 +89,14 @@ func TestExtendDockerIdWrong(t *testing.T) {
 
 			Convey("When docker id is extended", func() {
 				d := docker{containersInfo: ci}
-				longId, err := d.extendDockerId(wrongShortId)
+				longID, err := d.extendDockerID(wrongShortID)
 
 				Convey("Then error should be reported", func() {
 					So(err, ShouldNotBeNil)
 				})
 
 				Convey("Then returned value is empty", func() {
-					So(longId, ShouldBeEmpty)
+					So(longID, ShouldBeEmpty)
 				})
 			})
 		})
@@ -106,7 +107,7 @@ func TestGetStats(t *testing.T) {
 
 	Convey("Given docker id, stats, client", t, func() {
 
-		dockerId := "1234567890ab"
+		dockerID := "1234567890ab"
 		mountPoint := "mount/point/path"
 		mockStats := new(StatsMock)
 		mockClient := new(ClientMock)
@@ -135,7 +136,7 @@ func TestGetStats(t *testing.T) {
 					hostname:       "",
 				}
 
-				err := d.getStats(dockerId)
+				err := d.getStats(dockerID)
 
 				Convey("Then no error should be reported", func() {
 					So(err, ShouldBeNil)
@@ -156,10 +157,10 @@ func TestCollectMetrics(t *testing.T) {
 	Convey("Given 1234567890ab/cpu_stats/cpu_usage/total_usage metric type", t, func() {
 
 		mountPoint := "cgroup/mount/point/path"
-		shortDockerId := "1234567890ab"
-		longDockerId := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
-		ns := []string{NS_VENDOR, NS_CLASS, NS_PLUGIN, shortDockerId, "cpu_stats", "cpu_usage", "total_usage"}
-		metricTypes := []plugin.PluginMetricType{plugin.PluginMetricType{Namespace_: ns}}
+		shortDockerID := "1234567890ab"
+		longDockerID := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
+		ns := core.NewNamespace(NS_VENDOR, NS_CLASS, NS_PLUGIN, shortDockerID, "cpu_stats", "cpu_usage", "total_usage")
+		metricTypes := []plugin.MetricType{plugin.MetricType{Namespace_: ns}}
 
 		Convey("and docker plugin intitialized", func() {
 
@@ -180,7 +181,7 @@ func TestCollectMetrics(t *testing.T) {
 				stats:          stats,
 				client:         mockClient,
 				tools:          mockTools,
-				containersInfo: []ContainerInfo{ContainerInfo{Id: longDockerId}},
+				containersInfo: []ContainerInfo{ContainerInfo{Id: longDockerID}},
 				groupWrap:      mockWrapper,
 				hostname:       "",
 			}
@@ -210,11 +211,11 @@ func TestCollectMetricsWildcard(t *testing.T) {
 	Convey("Given * wildcard in requested metric type", t, func() {
 
 		mountPoint := "cgroup/mount/point/path"
-		longDockerId1 := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
-		longDockerId2 := "0987654321yz9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
+		longDockerID1 := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
+		longDockerID2 := "0987654321yz9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
 
-		ns := []string{NS_VENDOR, NS_CLASS, NS_PLUGIN, "*", "cpu_stats", "cpu_usage", "total_usage"}
-		metricTypes := []plugin.PluginMetricType{plugin.PluginMetricType{Namespace_: ns}}
+		ns := core.NewNamespace(NS_VENDOR, NS_CLASS, NS_PLUGIN, "*", "cpu_stats", "cpu_usage", "total_usage")
+		metricTypes := []plugin.MetricType{plugin.MetricType{Namespace_: ns}}
 
 		Convey("and docker plugin intitialized", func() {
 
@@ -236,8 +237,8 @@ func TestCollectMetricsWildcard(t *testing.T) {
 				client: mockClient,
 				tools:  mockTools,
 				containersInfo: []ContainerInfo{
-					ContainerInfo{Id: longDockerId1},
-					ContainerInfo{Id: longDockerId2}},
+					ContainerInfo{Id: longDockerID1},
+					ContainerInfo{Id: longDockerID2}},
 				groupWrap: mockWrapper,
 				hostname:  "",
 			}
@@ -265,8 +266,8 @@ func TestCollectMetricsWildcard(t *testing.T) {
 
 func TestGetMetrics(t *testing.T) {
 	Convey("Given docker id and running containers info", t, func() {
-		longDockerId := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
-		containersInfo := []ContainerInfo{ContainerInfo{Id: longDockerId}}
+		longDockerID := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
+		containersInfo := []ContainerInfo{ContainerInfo{Id: longDockerID}}
 		mountPoint := "cgroup/mount/point/path"
 		stats := cgroups.NewStats()
 
@@ -301,7 +302,7 @@ func TestGetMetrics(t *testing.T) {
 			}
 
 			Convey("When GetMetrics is called", func() {
-				mts, err := d.GetMetricTypes(plugin.PluginConfigType{})
+				mts, err := d.GetMetricTypes(plugin.ConfigType{})
 
 				Convey("Then no error should be reported", func() {
 					So(err, ShouldBeNil)
@@ -312,9 +313,9 @@ func TestGetMetrics(t *testing.T) {
 				})
 
 				Convey("Then metric namespace should be correctly set", func() {
-					ns := filepath.Join(mts[0].Namespace()...)
+					ns := filepath.Join(mts[0].Namespace().Strings()...)
 					expected := filepath.Join(
-						NS_VENDOR, NS_CLASS, NS_PLUGIN, longDockerId[:12], "cpu_stats", "cpu_usage", "total_usage")
+						NS_VENDOR, NS_CLASS, NS_PLUGIN, longDockerID[:12], "cpu_stats", "cpu_usage", "total_usage")
 					So(ns, ShouldEqual, expected)
 				})
 			})

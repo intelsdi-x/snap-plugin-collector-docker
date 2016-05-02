@@ -1,8 +1,8 @@
 sudo: false
 language: go
 go:
-- 1.5.3
-- 1.6
+- 1.5.4
+- 1.6.2
 before_install:
 - go get github.com/tools/godep
 - if [ ! -d $SNAP_PLUGIN_SOURCE ]; then mkdir -p $HOME/gopath/src/github.com/intelsdi-x; ln -s $TRAVIS_BUILD_DIR $SNAP_PLUGIN_SOURCE; fi # CI for forks not from intelsdi-x
