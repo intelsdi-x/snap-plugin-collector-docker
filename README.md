@@ -85,7 +85,7 @@ There are a number of other resources you can review to learn to use this plugin
 * [snap Docker JSON task example](examples/tasks/docker-file.json)
 
 ### Collected Metrics
-All metrics gathered by this plugin are exposed by [cgroups](https://www.kernel.org/doc/Documentation/cgroups/cgroups.txt).  
+All metrics gathered by this plugin are exposed by [cgroups](https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt).
 
 This plugin has the ability to gather the following metrics:
 
