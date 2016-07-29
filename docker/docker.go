@@ -207,7 +207,11 @@ func (d *docker) GetMetricTypes(_ plugin.ConfigType) ([]plugin.MetricType, error
 	for _, namespace := range namespaces {
 		// construct full namespace
 		fullNs := filepath.Join(NS_VENDOR, NS_CLASS, NS_PLUGIN, namespace)
-		metricTypes = append(metricTypes, plugin.MetricType{Namespace_: core.NewNamespace(strings.Split(fullNs, "/")...)})
+		ns := core.NewNamespace(strings.Split(fullNs, "/")...)
+		if ns[3].Value == "*" {
+			ns[3].Name = "Docker ID"
+		}
+		metricTypes = append(metricTypes, plugin.MetricType{Namespace_: ns})
 	}
 
 	return metricTypes, nil
