@@ -1,10 +1,8 @@
-// +build linux
-
 /*
 http://www.apache.org/licenses/LICENSE-2.0.txt
 
 
-Copyright 2015 Intel Corporation
+Copyright 2016 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,32 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package config
 
-import (
-	"os"
-
-	"github.com/intelsdi-x/snap-plugin-collector-docker/docker"
-	"github.com/intelsdi-x/snap/control/plugin"
-)
-
-func main() {
-
-	dockerPlg, err := docker.New()
-	if err != nil {
-		panic(err)
-	}
-
-	plugin.Start(
-		plugin.NewPluginMeta(
-			docker.NS_PLUGIN,
-			docker.VERSION,
-			plugin.CollectorPluginType,
-			[]string{},
-			[]string{plugin.SnapGOBContentType},
-			plugin.ConcurrencyCount(1)),
-		dockerPlg,
-		os.Args[1],
-	)
-
-}
+// DockerVersion is a version of running docker server
+var DockerVersion = []int{0, 0}

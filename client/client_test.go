@@ -1,10 +1,8 @@
-// +build unit
-
 /*
 http://www.apache.org/licenses/LICENSE-2.0.txt
 
 
-Copyright 2015 Intel Corporation
+Copyright 2016 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,35 +17,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package wrapper
+package client
 
 import (
+	"strings"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestWrapperProperDeclaration(t *testing.T) {
+func TestGetShortID(t *testing.T) {
 
-	Convey("Check for proper delcaration of wrapper map", t, func() {
+	Convey("Get short docker container ID", t, func() {
 
-		Convey("Length of map", func() {
-			So(len(Cgroups2Stats), ShouldBeGreaterThan, 0)
+		Convey("successful get short container ID (12 chars)", func() {
+			mockContainerID := strings.Repeat("1", 60)
+
+			shortID, err := GetShortID(mockContainerID)
+			So(err, ShouldBeNil)
+			So(len(shortID), ShouldEqual, 12)
 		})
 
-		Convey("Each value is of Stats interface type", func() {
-			for _, val := range Cgroups2Stats {
-				_, ok := val.(Stats)
-				So(ok, ShouldBeTrue)
-			}
-		})
-	})
-}
+		Convey("return an error when container ID contains less that 12 chars", func() {
+			mockContainerID := strings.Repeat("1", 11)
 
-func TestNewStatistics(t *testing.T) {
-	Convey("succeful initialization of stats structure", t, func() {
-		So(func() { NewStatistics() }, ShouldNotPanic)
-		stats := NewStatistics()
-		So(stats, ShouldNotBeNil)
+			shortID, err := GetShortID(mockContainerID)
+			So(err, ShouldNotBeNil)
+			So(shortID, ShouldBeBlank)
+		})
+
 	})
 }
