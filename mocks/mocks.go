@@ -23,27 +23,66 @@ package mocks
 
 import (
 	"github.com/stretchr/testify/mock"
+	dock "github.com/fsouza/go-dockerclient"
 
-	"github.com/opencontainers/runc/libcontainer/cgroups"
-
-	. "github.com/intelsdi-x/snap-plugin-collector-docker/client"
-	_ "github.com/intelsdi-x/snap-plugin-collector-docker/tools"
+	"github.com/intelsdi-x/snap-plugin-collector-docker/client"
+	"github.com/intelsdi-x/snap-plugin-collector-docker/wrapper"
 )
+
 
 type ClientMock struct {
 	mock.Mock
 }
 
-func (cm *ClientMock) ListContainers() ([]ContainerInfo, error) {
-	ret := cm.Mock.Called()
-	return ret.Get(0).([]ContainerInfo), ret.Error(1)
-}
-
 func (cm *ClientMock) FindCgroupMountpoint(subsystem string) (string, error) {
-	ret := cm.Mock.Called(subsystem)
+	ret := cm.Called(subsystem)
+
 	return ret.String(0), ret.Error(1)
 }
 
+func (cm *ClientMock) NewDockerClient() (*client.DockerClient, error) {
+	args := cm.Called()
+
+	var r0 *client.DockerClient
+	if args.Get(0) != nil {
+		r0 = args.Get(0).(*client.DockerClient)
+	}
+	return r0, args.Error(1)
+}
+
+func (cm *ClientMock) ListContainersAsMap() (map[string]dock.APIContainers, error) {
+	args := cm.Called()
+
+	var r0 map[string]dock.APIContainers
+	if args.Get(0) != nil {
+		r0 = args.Get(0).(map[string]dock.APIContainers)
+	}
+	return r0, args.Error(1)
+}
+
+func (cm *ClientMock) InspectContainer(string) (*dock.Container, error) {
+	args := cm.Called()
+
+	var r0 *dock.Container
+
+	if args.Get(0) != nil {
+		r0 = args.Get(0).(*dock.Container)
+	}
+
+	return r0, args.Error(1)
+}
+
+func (cm *ClientMock) GetStatsFromContainer(string, bool) (*wrapper.Statistics, error) {
+	args := cm.Called()
+
+	var r0 *wrapper.Statistics
+	if args.Get(0) != nil {
+		r0 = args.Get(0).(*wrapper.Statistics)
+	}
+	return r0, args.Error(1)
+}
+
+/*
 type StatsMock struct {
 	mock.Mock
 }
@@ -52,21 +91,57 @@ func (s *StatsMock) GetStats(path string, stats *cgroups.Stats) error {
 	ret := s.Mock.Called(path, stats)
 	return ret.Error(0)
 }
+*/
 
-type ToolsMock struct {
-	mock.Mock
-}
+func CreateMockStats() *wrapper.Statistics {
+	stats := wrapper.NewStatistics()
+	stats.Connection.Tcp.Close = 1
+	stats.Connection.Tcp.Established = 1
 
-func (tm *ToolsMock) Map2Namespace(stats map[string]interface{}, current string, out *[]string) {
-	_ = tm.Mock.Called(stats, current, out)
-}
+	stats.Connection.Tcp6.Close = 2
+	stats.Connection.Tcp6.Established = 2
 
-func (tm *ToolsMock) GetValueByField(object interface{}, fields []string) interface{} {
-	ret := tm.Mock.Called(object, fields)
-	return ret.Get(0).(interface{})
-}
+	stats.Network = []wrapper.NetworkInterface{
+		wrapper.NetworkInterface{
+			Name:      "eth0",
+			RxBytes:   1024,
+			RxPackets: 1,
+			TxBytes:   4096,
+			TxPackets: 4,
+			TxErrors:  0,
+		},
+		wrapper.NetworkInterface{
+			Name:      "eth1",
+			RxBytes:   2048,
+			RxPackets: 2,
+			TxBytes:   0,
+			TxPackets: 0,
+			TxErrors:  10,
+		},
+	}
+	stats.Filesystem["dev1"] = wrapper.FilesystemInterface{
+		Device:         "dev1",
+		Type:           "vfs",
+		Limit:          0,
+		Usage:          0,
+		BaseUsage:      0,
+		Available:      0,
+		InodesFree:     0,
+		ReadsCompleted: 0,
+	}
 
-func (tm *ToolsMock) GetValueByNamespace(object interface{}, ns []string) interface{} {
-	ret := tm.Mock.Called(object, ns)
-	return ret.Get(0).(interface{})
+	stats.Filesystem["dev2"] = wrapper.FilesystemInterface{
+		Device:         "dev2",
+		Type:           "vfs",
+		Limit:          0,
+		Usage:          0,
+		BaseUsage:      0,
+		Available:      0,
+		InodesFree:     0,
+		ReadsCompleted: 0,
+	}
+
+	stats.CgroupStats.CpuStats.CpuUsage.PercpuUsage = []uint64{1000, 2000, 3000, 4000}
+
+	return stats
 }

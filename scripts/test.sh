@@ -36,12 +36,14 @@ if [[ $TEST_SUITE == "unit" ]]; then
 	go get github.com/smartystreets/goconvey/convey
 	go get golang.org/x/tools/cmd/cover
 	go get github.com/fsouza/go-dockerclient
-        go get github.com/stretchr/testify/mock
-        go get github.com/opencontainers/runc/libcontainer
+    go get github.com/stretchr/testify/mock
+    go get github.com/opencontainers/runc/libcontainer
+    go get github.com/intelsdi-x/snap-plugin-utilities/ns
+    go get github.com/mistifyio/go-zfs
 	
 	COVERALLS_TOKEN=t47LG6BQsfLwb9WxB56hXUezvwpED6D11
-	TEST_DIRS="main.go ./docker ./tools ./wrapper"
-	VET_DIRS=". ./docker/... ./tools/... ./wrapper/... ./client/..."
+	TEST_DIRS="main.go ./docker ./client ./config ./fs ./mounts ./network ./wrapper"
+	VET_DIRS=". ./docker/... ./client/... ./config/... ./fs/... ./mounts/... ./network/... ./wrapper/..."
 
 	set -e
 

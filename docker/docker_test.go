@@ -1,5 +1,3 @@
-// +build unit
-
 /*
 http://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -22,304 +20,478 @@ limitations under the License.
 package docker
 
 import (
-	"path/filepath"
+	"errors"
+	"fmt"
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
-	"github.com/stretchr/testify/mock"
-
-	"github.com/opencontainers/runc/libcontainer/cgroups"
-
+	dock "github.com/fsouza/go-dockerclient"
+	"github.com/intelsdi-x/snap-plugin-collector-docker/client"
 	"github.com/intelsdi-x/snap/control/plugin"
 	"github.com/intelsdi-x/snap/core"
 
-	. "github.com/intelsdi-x/snap-plugin-collector-docker/client"
 	. "github.com/intelsdi-x/snap-plugin-collector-docker/mocks"
-	. "github.com/intelsdi-x/snap-plugin-collector-docker/tools"
-	. "github.com/intelsdi-x/snap-plugin-collector-docker/wrapper"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestExtendDockerIDProper(t *testing.T) {
+var mockStats = CreateMockStats()
+var mockDockerID = "a26c852ce22c"
+var mockDockerHost = "root"
 
-	Convey("Given short docker id", t, func() {
-
-		shortID := "1234567890ab"
-
-		Convey("and containers info with proper extension", func() {
-
-			proper := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
-			other := "31068893a2bc9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
-
-			ci := []ContainerInfo{
-				ContainerInfo{Id: other},
-				ContainerInfo{Id: proper},
-			}
-
-			Convey("When docker id is extended", func() {
-				d := docker{containersInfo: ci}
-				longID, err := d.extendDockerID(shortID)
-
-				Convey("Then error should not be reported", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("Then proper long id is returned", func() {
-					So(longID, ShouldEqual, proper)
-				})
-			})
-		})
-	})
+var mockListOfContainers = map[string]dock.APIContainers{
+	mockDockerHost: dock.APIContainers{
+		ID: "/",
+	},
+	mockDockerID: dock.APIContainers{
+		ID:         "a26c852ce22cbf94f75299b879ccb0d94427aa265778e1e9d6e6483ffb7837ed",
+		Image:      "my/image:latest",
+		Command:    "my-command.sh",
+		Created:    1469187756,
+		Status:     "Up 4 weeks",
+		SizeRw:     0,
+		SizeRootFs: 0,
+		Names:      []string{"/naught_goodall"},
+		Labels: map[string]string{
+			"lkey1": "lval1",
+			"lkey2": "lval2",
+			"lkey3": "lval3",
+		},
+	},
 }
 
-func TestExtendDockerIDWrong(t *testing.T) {
+var mockMts = []plugin.MetricType{
+	// representation of metrics grouped as `spec`
+	plugin.MetricType{
+		Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+			AddDynamicElement("docker_id", "an id of docker container").
+			AddStaticElements("spec", "creation_time"),
+	},
+	// representation of metrics grouped as `cgroup/cpu_stats`
+	plugin.MetricType{
+		Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+			AddDynamicElement("docker_id", "an id of docker container").
+			AddStaticElements("stats", "cgroups", "cpu_stats", "cpu_usage", "total_usage"),
+	},
+	plugin.MetricType{
+		Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+			AddDynamicElement("docker_id", "an id of docker container").
+			AddStaticElements("stats", "cgroups", "cpu_stats", "cpu_usage", "percpu_usage").
+			AddDynamicElement("cpu_id", "an id of cpu").
+			AddStaticElement("value"),
+	},
 
-	Convey("Given incorrect short docker id", t, func() {
+	// representation of metrics grouped as `cgroups/memory_stats`
+	plugin.MetricType{
+		Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+			AddDynamicElement("docker_id", "an id of docker container").
+			AddStaticElements("stats", "cgroups", "memory_stats", "cache"),
+	},
+	plugin.MetricType{
+		Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+			AddDynamicElement("docker_id", "an id of docker container").
+			AddStaticElements("stats", "cgroups", "memory_stats", "stats", "pgpgin"),
+	},
+	plugin.MetricType{
+		Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+			AddDynamicElement("docker_id", "an id of docker container").
+			AddStaticElements("stats", "cgroups", "memory_stats", "usage", "max_usage"),
+	},
 
-		wrongShortID := "wrongid12334"
+	// representation of metrics grouped as `connection`
+	plugin.MetricType{
+		Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+			AddDynamicElement("docker_id", "an id of docker container").
+			AddStaticElements("stats", "connection", "tcp", "established"),
+	},
+	plugin.MetricType{
+		Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+			AddDynamicElement("docker_id", "an id of docker container").
+			AddStaticElements("stats", "connection", "tcp6", "established"),
+	},
 
-		Convey("and containers info with proper extension", func() {
+	// representation of metrics grouped as `filesystem`
+	plugin.MetricType{
+		Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+			AddDynamicElement("docker_id", "an id of docker container").
+			AddStaticElements("stats", "filesystem").
+			AddDynamicElement("device_name", "a name of filesystem device").
+			AddStaticElement("usage"),
+	},
 
-			proper := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
-			other := "31068893a2bc9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
-
-			ci := []ContainerInfo{
-				ContainerInfo{Id: other},
-				ContainerInfo{Id: proper},
-			}
-
-			Convey("When docker id is extended", func() {
-				d := docker{containersInfo: ci}
-				longID, err := d.extendDockerID(wrongShortID)
-
-				Convey("Then error should be reported", func() {
-					So(err, ShouldNotBeNil)
-				})
-
-				Convey("Then returned value is empty", func() {
-					So(longID, ShouldBeEmpty)
-				})
-			})
-		})
-	})
+	// representation of metrics grouped as `network`
+	plugin.MetricType{
+		Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+			AddDynamicElement("docker_id", "an id of docker container").
+			AddStaticElements("stats", "network").
+			AddDynamicElement("network_interface", "a name of network interface or 'total' for aggregate").
+			AddStaticElement("rx_bytes"),
+	},
+	plugin.MetricType{
+		Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+			AddDynamicElement("docker_id", "an id of docker container").
+			AddStaticElements("stats", "network").
+			AddDynamicElement("network_interface", "a name of network interface or 'total' for aggregate").
+			AddStaticElement("tx_bytes"),
+	},
+	plugin.MetricType{
+		Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+			AddDynamicElement("docker_id", "an id of docker container").
+			AddStaticElements("spec", "labels").
+			AddDynamicElement("label_key", "a key of container's label").
+			AddStaticElement("value"),
+	},
 }
 
-func TestGetStats(t *testing.T) {
+func TestGetMetricTypes(t *testing.T) {
+	Convey("create Docker collector plugin", t, func() {
 
-	Convey("Given docker id, stats, client", t, func() {
+		mc := new(ClientMock)
+		mc.On("NewDockerClient").Return(&client.DockerClient{}, nil)
+		dockerPlg := &docker{
+			containers: map[string]containerData{},
+			client:     mc,
+		}
 
-		dockerID := "1234567890ab"
-		mountPoint := "mount/point/path"
-		mockStats := new(StatsMock)
-		mockClient := new(ClientMock)
-		stats := cgroups.NewStats()
+		Convey("get list of available metrics", func() {
+			metrics, err := dockerPlg.GetMetricTypes(plugin.ConfigType{})
+			So(err, ShouldBeNil)
+			So(metrics, ShouldNotBeEmpty)
 
-		mockClient.On("FindCgroupMountpoint", "cpu").Return(mountPoint, nil)
-		mockStats.On("GetStats", mock.AnythingOfType("string"), stats).Return(nil).Run(
-			func(args mock.Arguments) {
-				arg := args.Get(1).(*cgroups.Stats)
-				arg.CpuStats.CpuUsage.TotalUsage = 43
-				arg.CpuStats.CpuUsage.PercpuUsage = []uint64{99, 88}
-			})
-
-		Convey("and cgroups stats wrapper", func() {
-
-			mockWrapper := map[string]Stats{"cpu": mockStats}
-
-			Convey("When docker stats are requested", func() {
-
-				d := &docker{
-					stats:          stats,
-					client:         mockClient,
-					tools:          new(MyTools),
-					containersInfo: []ContainerInfo{},
-					groupWrap:      mockWrapper,
-					hostname:       "",
+			Convey("check if version is set ", func() {
+				for _, metric := range metrics {
+					So(metric.Version(), ShouldEqual, VERSION)
 				}
-
-				err := d.getStats(dockerID)
-
-				Convey("Then no error should be reported", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("Then stats should be set", func() {
-					So(stats.CpuStats.CpuUsage.TotalUsage, ShouldEqual, 43)
-					So(stats.CpuStats.CpuUsage.PercpuUsage[0], ShouldEqual, 99)
-					So(stats.CpuStats.CpuUsage.PercpuUsage[1], ShouldEqual, 88)
-				})
 			})
+		})
+	})
+}
+
+func TestGetConfigPolicy(t *testing.T) {
+	Convey("create Docker collector plugin", t, func() {
+		mc := new(ClientMock)
+		mc.On("NewDockerClient").Return(&client.DockerClient{}, nil)
+		dockerPlg := &docker{
+			containers: map[string]containerData{},
+			client:     mc,
+		}
+
+		Convey("get config policy", func() {
+			configPolicy, err := dockerPlg.GetConfigPolicy()
+			So(err, ShouldBeNil)
+			So(configPolicy, ShouldNotBeNil)
 		})
 	})
 }
 
 func TestCollectMetrics(t *testing.T) {
+	dockerPlg := &docker{
+		containers: map[string]containerData{},
+	}
 
-	Convey("Given 1234567890ab/cpu_stats/cpu_usage/total_usage metric type", t, func() {
+	Convey("return an error when there is no available container", t, func() {
+		mc := new(ClientMock)
+		mc.On("ListContainersAsMap").Return(nil, errors.New("No docker container found"))
+		dockerPlg.client = mc
+		metrics, err := dockerPlg.CollectMetrics(mockMts)
+		So(err, ShouldNotBeNil)
+		So(metrics, ShouldBeEmpty)
+		So(err.Error(), ShouldEqual, "No docker container found")
+	})
+	Convey("return an error when cannot get statistics", t, func() {
+		mc := new(ClientMock)
+		mc.On("ListContainersAsMap").Return(mockListOfContainers, nil)
+		mc.On("GetStatsFromContainer").Return(nil, errors.New("Cannot get statistics"))
+		dockerPlg.client = mc
+		metrics, err := dockerPlg.CollectMetrics(mockMts)
+		So(err, ShouldNotBeNil)
+		So(metrics, ShouldBeEmpty)
+		So(err.Error(), ShouldEqual, "Cannot get statistics")
+	})
+	Convey("successful collect metrics", t, func() {
+		mc := new(ClientMock)
+		mc.On("ListContainersAsMap").Return(mockListOfContainers, nil)
+		mc.On("GetStatsFromContainer").Return(mockStats, nil)
 
-		mountPoint := "cgroup/mount/point/path"
-		shortDockerID := "1234567890ab"
-		longDockerID := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
-		ns := core.NewNamespace(NS_VENDOR, NS_CLASS, NS_PLUGIN, shortDockerID, "cpu_stats", "cpu_usage", "total_usage")
-		metricTypes := []plugin.MetricType{plugin.MetricType{Namespace_: ns}}
+		dockerPlg.client = mc
+		metrics, err := dockerPlg.CollectMetrics(mockMts)
+		So(err, ShouldBeNil)
+		So(metrics, ShouldNotBeEmpty)
 
-		Convey("and docker plugin intitialized", func() {
+		// each of collected metrics should have set a version of collector plugin
+		Convey("collected metrics have set plugin version", func() {
+			for _, metric := range metrics {
+				So(metric.Version(), ShouldEqual, VERSION)
+			}
+		})
 
-			stats := cgroups.NewStats()
+		// collected metrics should not contain an asterisk in a namespace
+		Convey("collected metrics have specified namespace", func() {
+			for _, metric := range metrics {
+				So(metric.Namespace().Strings(), ShouldNotContain, "*")
+			}
+		})
 
-			mockClient := new(ClientMock)
-			mockStats := new(StatsMock)
-			mockTools := new(ToolsMock)
-			mockWrapper := map[string]Stats{"cpu": mockStats}
+	})
+	Convey("successful collect metrics for specified dynamic metric", t, func() {
+		mc := new(ClientMock)
+		mc.On("ListContainersAsMap").Return(mockListOfContainers, nil)
+		mc.On("GetStatsFromContainer").Return(mockStats, nil)
 
-			mockClient.On("FindCgroupMountpoint", "cpu").Return(mountPoint, nil)
+		dockerPlg.client = mc
 
-			mockStats.On("GetStats", mock.AnythingOfType("string"), stats).Return(nil)
-
-			mockTools.On("GetValueByNamespace", mock.AnythingOfType("*cgroups.Stats"), mock.Anything).Return(43)
-
-			d := &docker{
-				stats:          stats,
-				client:         mockClient,
-				tools:          mockTools,
-				containersInfo: []ContainerInfo{ContainerInfo{Id: longDockerID}},
-				groupWrap:      mockWrapper,
-				hostname:       "",
+		Convey("for specific dynamic elements: docker_id", func() {
+			mockMt := plugin.MetricType{
+				Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+					AddDynamicElement("docker_id", "an id of docker container").
+					AddStaticElements("stats", "cgroups", "memory_stats", "cache"),
 			}
 
-			Convey("When CollectMetric is called", func() {
-				mts, err := d.CollectMetrics(metricTypes)
+			Convey("succefull when specified container exists", func() {
+				Convey("for short docker_id", func() {
+					// specify docker id of requested metric type as a short
+					mockMt.Namespace()[2].Value = mockDockerID
 
-				Convey("Then error should not be reported", func() {
+					metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
 					So(err, ShouldBeNil)
+					So(metrics, ShouldNotBeEmpty)
+					So(len(metrics), ShouldEqual, 1)
+					So(metrics[0].Namespace(), ShouldResemble, mockMt.Namespace())
 				})
+				Convey("for long docker_id", func() {
+					// specify docker id of requested metric type as a long
+					mockMt.Namespace()[2].Value = mockListOfContainers[mockDockerID].ID
 
-				Convey("One metric should be returned", func() {
-					So(len(mts), ShouldEqual, 1)
+					metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+					So(err, ShouldBeNil)
+					So(metrics, ShouldNotBeEmpty)
+					So(len(metrics), ShouldEqual, 1)
+					So(metrics[0].Namespace().String(), ShouldEqual, "/intel/docker/"+mockDockerID+"/stats/cgroups/memory_stats/cache")
 				})
+				Convey("for host of docker_id", func() {
+					// specify docker id of requested metric type
+					mockMt.Namespace()[2].Value = "root"
 
-				Convey("Metric value should be correctly set", func() {
-					So(mts[0].Data(), ShouldEqual, 43)
+					metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+					So(err, ShouldBeNil)
+					So(metrics, ShouldNotBeEmpty)
+					So(len(metrics), ShouldEqual, 1)
+					So(metrics[0].Namespace().String(), ShouldEqual, "/intel/docker/root/stats/cgroups/memory_stats/cache")
 				})
 			})
+			Convey("return an error when specified docker_id is invalid", func() {
+				Convey("when there is no such container", func() {
+					// specify id (12 chars) of docker container which not exist (it's not returned by ListContainerAsMap())
+					mockMt.Namespace()[2].Value = "111111111111"
 
+					metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+					So(err, ShouldNotBeNil)
+					So(metrics, ShouldBeEmpty)
+					So(err.Error(), ShouldEqual, "Docker container 111111111111 cannot be found")
+				})
+				Convey("when specified docker_id has invalid format", func() {
+					mockMt := plugin.MetricType{
+						Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+							AddDynamicElement("docker_id", "an id of docker container").
+							AddStaticElements("stats", "cgroups", "memory_stats", "cache"),
+					}
+					// specify requested docker id in invalid way (shorter than 12 chars)
+					mockMt.Namespace()[2].Value = "1"
+
+					metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+					So(err, ShouldNotBeNil)
+					So(metrics, ShouldBeEmpty)
+					So(err.Error(), ShouldEqual, "Docker id 1 is too short (the length of id should equal at least 12)")
+				})
+			})
+		})
+		Convey("for specific dynamic elements: docker_id and cpu_id", func() {
+			mockMt := plugin.MetricType{
+				Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+					AddDynamicElement("docker_id", "an id of docker container").
+					AddStaticElements("stats", "cgroups", "cpu_stats", "cpu_usage", "percpu_usage").
+					AddDynamicElement("cpu_id", "an id of cpu").
+					AddStaticElement("value"),
+			}
+			// specify docker_id and cpu_id of requested metric type
+			mockMt.Namespace()[2].Value = mockDockerID
+
+			Convey("successful when specified cpu_id is valid", func() {
+				mockMt.Namespace()[8].Value = "0"
+
+				metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+				So(err, ShouldBeNil)
+				So(metrics, ShouldNotBeEmpty)
+				So(len(metrics), ShouldEqual, 1)
+				So(metrics[0].Namespace(), ShouldResemble, mockMt.Namespace())
+			})
+			Convey("return an error when specified cpu_id is invalid", func() {
+				Convey("when cpu_id is out of range", func() {
+					// specify cpu_id which does not exist (out of range)
+					mockMt.Namespace()[8].Value = "100"
+
+					metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+					So(err, ShouldNotBeNil)
+					So(metrics, ShouldBeEmpty)
+				})
+				Convey("when cpu_id is negative", func() {
+					mockMt.Namespace()[8].Value = "-1"
+
+					metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+					So(err, ShouldNotBeNil)
+					So(metrics, ShouldBeEmpty)
+				})
+				Convey("when cpu_id is a float", func() {
+					mockMt.Namespace()[8].Value = "1.0"
+
+					metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+					So(err, ShouldNotBeNil)
+					So(metrics, ShouldBeEmpty)
+				})
+			})
+		})
+		Convey("for specific dynamic elements: docker_id and device_name", func() {
+			mockMt := plugin.MetricType{
+				Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+					AddDynamicElement("docker_id", "an id of docker container").
+					AddStaticElements("stats", "filesystem").
+					AddDynamicElement("device_name", "a name of filesystem device").
+					AddStaticElement("usage"),
+			}
+			mockMt.Namespace()[2].Value = mockDockerID
+
+			Convey("successful when specified device exists", func() {
+				mockMt.Namespace()[5].Value = "dev1"
+
+				metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+				So(err, ShouldBeNil)
+				So(metrics, ShouldNotBeEmpty)
+				So(len(metrics), ShouldEqual, 1)
+				So(metrics[0].Namespace(), ShouldResemble, mockMt.Namespace())
+			})
+			Convey("return an error when specified device is invalid", func() {
+				mockMt.Namespace()[5].Value = "invalid_dev_name"
+
+				metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+				So(err, ShouldNotBeNil)
+				So(metrics, ShouldBeEmpty)
+				So(err.Error(), ShouldEqual, fmt.Sprintf("In metric %s the given device name is invalid (no stats for this device)", mockMt.Namespace().String()))
+			})
+		})
+		Convey("for specific dynamic elements: docker_id and network_interface", func() {
+			mockMt := plugin.MetricType{
+				Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+					AddDynamicElement("docker_id", "an id of docker container").
+					AddStaticElements("stats", "network").
+					AddDynamicElement("network_interface", "a name of network interface or 'total' for aggregate").
+					AddStaticElement("rx_bytes"),
+			}
+			// specify docker_id and device_name of requested metric type
+			mockMt.Namespace()[2].Value = mockDockerID
+
+			Convey("successful when specified network interface exists", func() {
+				mockMt.Namespace()[5].Value = "eth0"
+
+				metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+				So(err, ShouldBeNil)
+				So(metrics, ShouldNotBeEmpty)
+				So(len(metrics), ShouldEqual, 1)
+				So(metrics[0].Namespace(), ShouldResemble, mockMt.Namespace())
+			})
+			Convey("return an error when specified network interface is invalid", func() {
+				mockMt.Namespace()[5].Value = "eth0_invalid"
+
+				metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+				So(err, ShouldNotBeNil)
+				So(metrics, ShouldBeEmpty)
+				So(err.Error(), ShouldEqual, fmt.Sprintf("In metric %s the given network interface is invalid (no stats for this net interface)", mockMt.Namespace().String()))
+			})
+		})
+		Convey("for specific dynamic elements: docker_id and label_key", func() {
+			mockMt := plugin.MetricType{
+				Namespace_: core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+					AddDynamicElement("docker_id", "an id of docker container").
+					AddStaticElements("spec", "labels").
+					AddDynamicElement("label_key", "a key of container's label").
+					AddStaticElement("value"),
+			}
+			// specify docker_id and device_name of requested metric type
+			mockMt.Namespace()[2].Value = mockDockerID
+
+			Convey("successful when specified label exists", func() {
+				mockMt.Namespace()[5].Value = "lkey1"
+
+				metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+				So(err, ShouldBeNil)
+				So(metrics, ShouldNotBeEmpty)
+				So(len(metrics), ShouldEqual, 1)
+				So(metrics[0].Namespace(), ShouldResemble, mockMt.Namespace())
+			})
+			Convey("return an error when specified label is invalid (not exist)", func() {
+				mockMt.Namespace()[5].Value = "lkey1_invalid"
+
+				metrics, err := dockerPlg.CollectMetrics([]plugin.MetricType{mockMt})
+				So(err, ShouldNotBeNil)
+				So(metrics, ShouldBeEmpty)
+				So(err.Error(), ShouldEqual, fmt.Sprintf("In metric %s the given label is invalid (no value for this label key)", mockMt.Namespace().String()))
+			})
 		})
 	})
 }
 
-func TestCollectMetricsWildcard(t *testing.T) {
+func TestCreateMetricNamespace(t *testing.T) {
+	Convey("create metric namespace", t, func() {
+		nscreator := nsCreator{}
 
-	Convey("Given * wildcard in requested metric type", t, func() {
+		Convey("return an error when metric name is empty", func() {
+			ns, err := nscreator.createMetricNamespace(core.NewNamespace(), "")
+			So(err, ShouldNotBeNil)
+			So(ns, ShouldBeNil)
+		})
 
-		mountPoint := "cgroup/mount/point/path"
-		longDockerID1 := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
-		longDockerID2 := "0987654321yz9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
+		Convey("when metric name contains only static elements", func() {
+			ns, err := nscreator.createMetricNamespace(core.NewNamespace("vendor", "plugin"), "disk/total_usage")
+			So(err, ShouldBeNil)
+			So(ns, ShouldNotBeNil)
+			So(ns.String(), ShouldEqual, "/vendor/plugin/disk/total_usage")
+		})
 
-		ns := core.NewNamespace(NS_VENDOR, NS_CLASS, NS_PLUGIN, "*", "cpu_stats", "cpu_usage", "total_usage")
-		metricTypes := []plugin.MetricType{plugin.MetricType{Namespace_: ns}}
+		Convey("when metric name contains dynamic element", func() {
 
-		Convey("and docker plugin intitialized", func() {
+			Convey("return an error for unknown dynamic element", func() {
+				ns, err := nscreator.createMetricNamespace(core.NewNamespace("vendor", "plugin"), "disk/*/usage")
+				So(err, ShouldNotBeNil)
+				So(ns, ShouldBeNil)
+				So(err.Error(), ShouldEqual, "Unknown dynamic element in metric `disk/*/usage` under index 1")
+			})
 
-			stats := cgroups.NewStats()
+			Convey("successful create metric namespace with dynamic element", func() {
+				// set definition of dynamic element (its name and description)
+				nscreator.dynamicElements = map[string]dynamicElement{
+					"disk": dynamicElement{"disk_id", "id of disk"},
+				}
+				ns, err := nscreator.createMetricNamespace(core.NewNamespace("vendor", "plugin"), "disk/*/usage")
+				So(err, ShouldBeNil)
+				So(ns, ShouldNotBeEmpty)
+				So(ns.String(), ShouldEqual, "/vendor/plugin/disk/*/usage")
+				So(ns.Element(3).Description, ShouldEqual, nscreator.dynamicElements["disk"].description)
+				So(ns.Element(3).Name, ShouldEqual, nscreator.dynamicElements["disk"].name)
+			})
 
-			mockClient := new(ClientMock)
-			mockStats := new(StatsMock)
-			mockTools := new(ToolsMock)
-			mockWrapper := map[string]Stats{"cpu": mockStats}
-
-			mockClient.On("FindCgroupMountpoint", "cpu").Return(mountPoint, nil)
-
-			mockStats.On("GetStats", mock.AnythingOfType("string"), stats).Return(nil)
-
-			mockTools.On("GetValueByNamespace", mock.AnythingOfType("*cgroups.Stats"), mock.Anything).Return(43)
-
-			d := &docker{
-				stats:  stats,
-				client: mockClient,
-				tools:  mockTools,
-				containersInfo: []ContainerInfo{
-					ContainerInfo{Id: longDockerID1},
-					ContainerInfo{Id: longDockerID2}},
-				groupWrap: mockWrapper,
-				hostname:  "",
-			}
-
-			Convey("When CollectMetric is called", func() {
-				mts, err := d.CollectMetrics(metricTypes)
-
-				Convey("Then error should not be reported", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("Two metrics should be returned", func() {
-					So(len(mts), ShouldEqual, 2)
-				})
-
-				Convey("Metric value should be correctly set", func() {
-					So(mts[0].Data(), ShouldEqual, 43)
-					So(mts[1].Data(), ShouldEqual, 43)
-				})
+			Convey("successful create metric namespace with dynamic element at the end of metric name", func() {
+				nscreator.dynamicElements = map[string]dynamicElement{
+					"percpu_usage": dynamicElement{"cpu_id", "id of cpu"},
+				}
+				ns, err := nscreator.createMetricNamespace(core.NewNamespace("vendor", "plugin"), "percpu_usage/*")
+				So(err, ShouldBeNil)
+				So(ns, ShouldNotBeEmpty)
+				// metric namespace should not end with an asterisk,
+				// so element `value` is expected to be added
+				So(ns.String(), ShouldEqual, "/vendor/plugin/percpu_usage/*/value")
+				So(ns.Element(3).Description, ShouldEqual, nscreator.dynamicElements["percpu_usage"].description)
+				So(ns.Element(3).Name, ShouldEqual, nscreator.dynamicElements["percpu_usage"].name)
 			})
 
 		})
-	})
-}
-
-func TestGetMetrics(t *testing.T) {
-	Convey("Given docker id and running containers info", t, func() {
-		longDockerID := "1234567890ab9207edb4e6188cf5be3294c23c936ca449c3d48acd2992e357a8"
-		containersInfo := []ContainerInfo{ContainerInfo{Id: longDockerID}}
-		mountPoint := "cgroup/mount/point/path"
-		stats := cgroups.NewStats()
-
-		Convey("and docker plugin initialized", func() {
-			mockClient := new(ClientMock)
-			mockStats := new(StatsMock)
-			mockTools := new(ToolsMock)
-			mockWrapper := map[string]Stats{"cpu": mockStats}
-
-			mockTools.On(
-				"Map2Namespace",
-				mock.Anything,
-				mock.AnythingOfType("string"),
-				mock.AnythingOfType("*[]string"),
-			).Return().Run(
-				func(args mock.Arguments) {
-					id := args.String(1)
-					ns := args.Get(2).(*[]string)
-					*ns = append(*ns, filepath.Join(id, "cpu_stats/cpu_usage/total_usage"))
-				})
-
-			mockClient.On("FindCgroupMountpoint", "cpu").Return(mountPoint, nil)
-			mockStats.On("GetStats", mock.AnythingOfType("string"), mock.AnythingOfType("*cgroups.Stats")).Return(nil)
-
-			d := &docker{
-				stats:          stats,
-				client:         mockClient,
-				tools:          mockTools,
-				groupWrap:      mockWrapper,
-				containersInfo: containersInfo,
-				hostname:       "",
-			}
-
-			Convey("When GetMetrics is called", func() {
-				mts, err := d.GetMetricTypes(plugin.ConfigType{})
-
-				Convey("Then no error should be reported", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("Then one explicit metric should be returned and wildcard docker id metric", func() {
-					So(len(mts), ShouldEqual, 2)
-				})
-
-				Convey("Then metric namespace should be correctly set", func() {
-					ns := filepath.Join(mts[0].Namespace().Strings()...)
-					expected := filepath.Join(
-						NS_VENDOR, NS_CLASS, NS_PLUGIN, longDockerID[:12], "cpu_stats", "cpu_usage", "total_usage")
-					So(ns, ShouldEqual, expected)
-				})
-			})
-		})
 
 	})
+
 }

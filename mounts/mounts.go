@@ -1,10 +1,8 @@
-// +build linux
-
 /*
 http://www.apache.org/licenses/LICENSE-2.0.txt
 
 
-Copyright 2015 Intel Corporation
+Copyright 2016 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,32 +17,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+// Package mounts provides information about mountpoints
+package mounts
 
 import (
 	"os"
-
-	"github.com/intelsdi-x/snap-plugin-collector-docker/docker"
-	"github.com/intelsdi-x/snap/control/plugin"
+	"strings"
 )
 
-func main() {
+const (
+	procfsMountEnv     = "PROCFS_MOUNT"
+	procfsMountDefault = "/proc"
+)
 
-	dockerPlg, err := docker.New()
-	if err != nil {
-		panic(err)
+// ProcfsMountPoint holds a path to mountpoint of procfs, defaults to `/proc`
+var ProcfsMountPoint = getProcfsMountpoint()
+
+func getProcfsMountpoint() string {
+	if procfsMount := os.Getenv(procfsMountEnv); procfsMount != "" {
+		//trim suffix in case that env var contains slash in the end
+		return strings.TrimSuffix(procfsMount, "/")
 	}
-
-	plugin.Start(
-		plugin.NewPluginMeta(
-			docker.NS_PLUGIN,
-			docker.VERSION,
-			plugin.CollectorPluginType,
-			[]string{},
-			[]string{plugin.SnapGOBContentType},
-			plugin.ConcurrencyCount(1)),
-		dockerPlg,
-		os.Args[1],
-	)
-
+	return procfsMountDefault
 }
