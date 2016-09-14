@@ -1,5 +1,3 @@
-// +build unit
-
 /*
 http://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -22,13 +20,12 @@ limitations under the License.
 package mocks
 
 import (
-	"github.com/stretchr/testify/mock"
 	dock "github.com/fsouza/go-dockerclient"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/intelsdi-x/snap-plugin-collector-docker/client"
 	"github.com/intelsdi-x/snap-plugin-collector-docker/wrapper"
 )
-
 
 type ClientMock struct {
 	mock.Mock

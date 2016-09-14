@@ -1,0 +1,17 @@
+pluginsync_config: '0.1.4'
+managed_files:
+- .github
+- .github/ISSUE_TEMPLATE.md
+- .github/PULL_REQUEST_TEMPLATE.md
+- .gitignore
+- .pluginsync.yml
+- .travis.yml
+- CONTRIBUTING.md
+- LICENSE
+- Makefile
+- scripts
+- scripts/build.sh
+- scripts/common.sh
+- scripts/deps.sh
+- scripts/pre_deploy.sh
+- scripts/test.sh

@@ -1,106 +1,99 @@
-#!/bin/bash -e
+#!/bin/bash
+# File managed by pluginsync
 
-#http://www.apache.org/licenses/LICENSE-2.0.txt
+# http://www.apache.org/licenses/LICENSE-2.0.txt
 #
 #
-#Copyright 2015 Intel Corporation
+# Copyright 2016 Intel Corporation
 #
-#Licensed under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License.
-#You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#Unless required by applicable law or agreed to in writing, software
-#distributed under the License is distributed on an "AS IS" BASIS,
-#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#See the License for the specific language governing permissions and
-#limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-# The script does automatic checking on a Go package and its sub-packages, including:
-# 1. gofmt         (http://golang.org/cmd/gofmt/)
-# 2. goimports     (https://github.com/bradfitz/goimports)
-# 3. golint        (https://github.com/golang/lint)
-# 4. go vet        (http://golang.org/cmd/vet)
-# 5. race detector (http://blog.golang.org/race-detector)
-# 6. test coverage (http://blog.golang.org/cover)
+# Support travis.ci environment matrix:
+TEST_TYPE="${TEST_TYPE:-$1}"
+UNIT_TEST="${UNIT_TEST:-"gofmt goimports go_vet go_test go_cover"}"
+TEST_K8S="${TEST_K8S:-0}"
 
-# Capture what test we should run
-TEST_SUITE=$1
+set -e
+set -u
+set -o pipefail
 
-if [[ $TEST_SUITE == "unit" ]]; then
-	go get github.com/axw/gocov/gocov
-	go get github.com/mattn/goveralls
-	go get -u github.com/golang/lint/golint
-	go get golang.org/x/tools/cmd/goimports
-	go get github.com/smartystreets/goconvey/convey
-	go get golang.org/x/tools/cmd/cover
-	go get github.com/fsouza/go-dockerclient
-    go get github.com/stretchr/testify/mock
-    go get github.com/opencontainers/runc/libcontainer
-    go get github.com/intelsdi-x/snap-plugin-utilities/ns
-    go get github.com/mistifyio/go-zfs
-	
-	COVERALLS_TOKEN=t47LG6BQsfLwb9WxB56hXUezvwpED6D11
-	TEST_DIRS="main.go ./docker ./client ./config ./fs ./mounts ./network ./wrapper"
-	VET_DIRS=". ./docker/... ./client/... ./config/... ./fs/... ./mounts/... ./network/... ./wrapper/..."
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+__proj_dir="$(dirname "$__dir")"
 
-	set -e
+# shellcheck source=scripts/common.sh
+. "${__dir}/common.sh"
 
-	# Automatic checks
-	echo "gofmt"
-	test -z "$(gofmt -l -d $TEST_DIRS | tee /dev/stderr)"
+_debug "script directory ${__dir}"
+_debug "project directory ${__proj_dir}"
 
-	echo "goimports"
-	test -z "$(goimports -l -d $TEST_DIRS | tee /dev/stderr)"
+[[ "$TEST_TYPE" =~ ^(small|medium|large|legacy|build)$ ]] || _error "invalid TEST_TYPE (value must be 'small', 'medium', 'large', 'legacy', or 'build' recieved:${TEST_TYPE}"
 
-	# Useful but should not fail on link per: https://github.com/golang/lint
-	# "The suggestions made by golint are exactly that: suggestions. Golint is not perfect,
-	# and has both false positives and false negatives. Do not treat its output as a gold standard.
-	# We will not be adding pragmas or other knobs to suppress specific warnings, so do not expect
-	# or require code to be completely "lint-free". In short, this tool is not, and will never be,
-	# trustworthy enough for its suggestions to be enforced automatically, for example as part of
-	# a build process"
-	# echo "golint"
-	# golint ./...
+_gofmt() {
+  test -z "$(gofmt -l -d $(find . -type f -name '*.go' -not -path "./vendor/*") | tee /dev/stderr)"
+}
 
-	echo "go vet"
-	go vet $VET_DIRS
-	# go test -race ./... - Lets disable for now
- 
-	# Run test coverage on each subdirectories and merge the coverage profile.
-	echo "mode: count" > profile.cov
- 
-	# Standard go tooling behavior is to ignore dirs with leading underscors
-	for dir in $(find . -maxdepth 10 -not -path './.git*' -not -path '*/_*' -not -path './examples/*' -not -path './scripts/*' -not -path './build/*' -not -path './Godeps/*' -type d);
-	do
-		if ls $dir/*.go &> /dev/null; then
-	    		go test --tags=unit -covermode=count -coverprofile=$dir/profile.tmp $dir
-	    		if [ -f $dir/profile.tmp ]
-	    		then
-	        		cat $dir/profile.tmp | tail -n +2 >> profile.cov
-	        		rm $dir/profile.tmp
-	    		fi
-		fi
-	done
- 
-	go tool cover -func profile.cov
- 
-	# Disabled Coveralls.io for now
-	# To submit the test coverage result to coveralls.io,
-	# use goveralls (https://github.com/mattn/goveralls)
-	# goveralls -coverprofile=profile.cov -service=travis-ci -repotoken t47LG6BQsfLwb9WxB56hXUezvwpED6D11
-	#
-	# If running inside Travis we update coveralls. We don't want his happening on Macs
-	# if [ "$TRAVIS" == "true" ]
-	# then
-	#     n=1
-	#     until [ $n -ge 6 ]
-	#     do
-	#         echo "posting to coveralls attempt $n of 5"
-	#         goveralls -v -coverprofile=profile.cov -service travis.ci -repotoken $COVERALLS_TOKEN && break
-	#         n=$[$n+1]
-	#         sleep 30
-	#     done
-	# fi
+test_unit() {
+  # The script does automatic checking on a Go package and its sub-packages, including:
+  # 1. gofmt         (http://golang.org/cmd/gofmt/)
+  # 2. goimports     (https://github.com/bradfitz/goimports)
+  # 3. golint        (https://github.com/golang/lint)
+  # 4. go vet        (http://golang.org/cmd/vet)
+  # 5. race detector (http://blog.golang.org/race-detector)
+  # 6. go test
+  # 7. test coverage (http://blog.golang.org/cover)
+  local go_tests
+  go_tests=(gofmt goimports golint go_vet go_race go_test go_cover)
+
+  _debug "available unit tests: ${go_tests[*]}"
+  _debug "user specified tests: ${UNIT_TEST}"
+
+  ((n_elements=${#go_tests[@]}, max=n_elements - 1))
+
+  for ((i = 0; i <= max; i++)); do
+    if [[ "${UNIT_TEST}" =~ (^| )"${go_tests[i]}"( |$) ]]; then
+      _info "running ${go_tests[i]}"
+      _"${go_tests[i]}"
+    else
+      _debug "skipping ${go_tests[i]}"
+    fi
+  done
+}
+
+if [[ $TEST_TYPE == "legacy" ]]; then
+  echo "mode: count" > profile.cov
+  export TEST_TYPE="unit"
+  test_unit
+elif [[ $TEST_TYPE == "small" ]]; then
+  if [[ -f "${__dir}/small.sh" ]]; then
+    . "${__dir}/small.sh"
+  else
+    echo "mode: count" > profile.cov
+    test_unit
+  fi
+elif [[ $TEST_TYPE == "medium" ]]; then
+  if [[ -f "${__dir}/medium.sh" ]]; then
+    . "${__dir}/medium.sh"
+  else
+    _info "No medium tests."
+  fi
+elif [[ $TEST_TYPE == "large" ]]; then
+  if [[ "${TEST_K8S}" != "0" && -f "$__dir/large_k8s.sh" ]]; then
+    . "${__dir}/large_k8s.sh"
+  elif [[ -f "${__dir}/large_compose.sh" ]]; then
+    . "${__dir}/large_compose.sh"
+  else
+    _info "No large tests."
+  fi
+elif [[ $TEST_TYPE == "build" ]]; then
+  "${__dir}/build.sh"
 fi
