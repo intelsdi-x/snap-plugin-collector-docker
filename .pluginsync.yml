@@ -1,4 +1,4 @@
-pluginsync_config: '0.1.4'
+pluginsync_config: '0.1.5'
 managed_files:
 - .github
 - .github/ISSUE_TEMPLATE.md
