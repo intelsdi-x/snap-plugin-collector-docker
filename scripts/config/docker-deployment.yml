@@ -1,0 +1,25 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata: 
+    name: docker-deployment
+spec:
+    replicas: 1
+    template: 
+        metadata: 
+            labels:
+                app: docker
+        spec:
+            containers:
+            - name: main
+              image: docker:dind
+              env:
+                - name: SNAP_VERSION
+                  value: "latest"
+                - name: PLUGIN_SRC
+                  value: /src
+                - name: RUN_SCRIPT
+                  value: "\"/src/scripts/large_tests.sh\""
+              imagePullPolicy: "IfNotPresent"
+              securityContext:
+                privileged: true
