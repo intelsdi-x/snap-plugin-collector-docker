@@ -2,7 +2,7 @@
   "version": 1,
   "schedule": {
     "type": "simple",
-    "interval": "1s"
+    "interval": "5s"
   },
   "workflow": {
     "collect": {
@@ -12,7 +12,7 @@
       "config": {},
       "publish": [
         {
-          "plugin_name": "mock-file",
+          "plugin_name": "file",
           "config": {
             "file": "/tmp/snap-docker-file.log"
           }

@@ -1,0 +1,12 @@
+version: '2'
+services:
+  docker:
+    container_name: docker
+    image: docker:dind
+    environment:
+      - SNAP_VERSION=latest
+      - PLUGIN_SRC=${PLUGIN_DEST}
+    volumes:
+      - ${PLUGIN_SRC}:${PLUGIN_DEST}
+      - /etc/resolv.conf:/etc/resolv.conf
+    privileged: true
