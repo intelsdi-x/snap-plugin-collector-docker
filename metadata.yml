@@ -1,0 +1,9 @@
+name: docker
+type: collector
+maintainer: core
+license: Apache-2.0
+description: "Collects Docker container runtime metrics."
+badge:
+  - "[![Build Status](https://travis-ci.org/intelsdi-x/snap-plugin-collector-docker.svg?branch=master)](https://travis-ci.org/intelsdi-x/snap-plugin-collector-docker)"
+ci:
+  - https://travis-ci.org/intelsdi-x/snap-plugin-collector-docker
