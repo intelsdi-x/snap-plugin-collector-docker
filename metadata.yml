@@ -5,5 +5,7 @@ license: Apache-2.0
 description: "Collects Docker container runtime metrics."
 badge:
   - "[![Build Status](https://travis-ci.org/intelsdi-x/snap-plugin-collector-docker.svg?branch=master)](https://travis-ci.org/intelsdi-x/snap-plugin-collector-docker)"
+  - "[![Build Status](https://ci.snap-telemetry.io/buildStatus/icon?job=snap-plugin-collector-docker-large-prb-k8s)](https://ci.snap-telemetry.io/job/snap-plugin-collector-docker-large-prb-k8s/)"
 ci:
   - https://travis-ci.org/intelsdi-x/snap-plugin-collector-docker
+  - https://ci.snap-telemetry.io/job/snap-plugin-collector-docker-large-prb-k8s/
