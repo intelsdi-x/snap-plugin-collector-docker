@@ -49,7 +49,7 @@ In order to use this plugin you need Docker Engine installed. Visit [Install Doc
 You can get the pre-built binaries for your OS and architecture at snap's [GitHub Releases](https://github.com/intelsdi-x/snap/releases) page.
 
 #### To build the plugin binary:
-Fork https://github.com/intelsdi-x/snap-plugin-collector-docker  
+Fork https://github.com/intelsdi-x/snap-plugin-collector-docker
 Clone repo into `$GOPATH/src/github.com/intelsdi-x/`:
 
 ```
@@ -62,7 +62,7 @@ $ make
 ```
 It may take a while to pull dependencies if you haven't had them already.
 
-This builds the plugin in `/build/rootfs/`
+This builds the plugin in `/build/`
 
 ### Configuration and Usage
 * Set up the [Snap framework](https://github.com/intelsdi-x/snap/blob/master/README.md#getting-started)
@@ -128,9 +128,18 @@ Load snap-plugin-collector-docker plugin:
 $ snapctl plugin load build/linux/x86_64/snap-plugin-collector-docker
 ```
 
-Load [snap-plugin-publisher-file](https://github.com/intelsdi-x/snap-plugin-publisher-file) plugin:
+Get file plugin for publishing, appropriate for Linux or Darwin:
 ```
-$ snapctl plugin load <path to snap-plugin-publisher-file>
+$ wget  http://snap.ci.snap-telemetry.io/plugins/snap-plugin-publisher-file/latest/linux/x86_64/snap-plugin-publisher-file
+```
+or
+```
+$ wget  http://snap.ci.snap-telemetry.io/plugins/snap-plugin-publisher-file/latest/darwin/x86_64/snap-plugin-publisher-file
+```
+
+Load file plugin for publishing:
+```
+$ snapctl plugin load snap-plugin-publisher-file
 ```
 
 Another terminal window, you can list all of available metrics:
