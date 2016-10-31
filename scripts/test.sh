@@ -84,7 +84,8 @@ elif [[ $TEST_TYPE == "medium" ]]; then
   if [[ -f "${__dir}/medium.sh" ]]; then
     . "${__dir}/medium.sh"
   else
-    _info "No medium tests."
+    UNIT_TEST="go_test"
+    test_unit
   fi
 elif [[ $TEST_TYPE == "large" ]]; then
   if [[ "${TEST_K8S}" != "0" && -f "$__dir/large_k8s.sh" ]]; then
