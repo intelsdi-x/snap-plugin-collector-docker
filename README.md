@@ -1,25 +1,5 @@
-<!--
-http://www.apache.org/licenses/LICENSE-2.0.txt
-
-
-Copyright 2015 Intel Corporation
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
--->
-
 [![Build Status](https://travis-ci.org/intelsdi-x/snap-plugin-collector-docker.svg?branch=master)](https://travis-ci.com/intelsdi-x/snap-plugin-collector-docker)
-
-# snap collector plugin - Docker
+# Snap collector plugin - Docker
 
 This plugin collects runtime metrics from Docker containers and its host machine. It gathers information about resource usage and performance characteristics. 
 
@@ -45,8 +25,9 @@ In order to use this plugin you need Docker Engine installed. Visit [Install Doc
 * Darwin/amd64 (needs [docker-machine](https://docs.docker.com/v1.8/installation/mac/))
 
 ### Installation
+#### Download the plugin binary:
 
-You can get the pre-built binaries for your OS and architecture at snap's [GitHub Releases](https://github.com/intelsdi-x/snap/releases) page.
+You can get the pre-built binaries for your OS and architecture from the plugin's [GitHub Releases](https://github.com/intelsdi-x/snap-plugin-collector-docker/releases) page. Download the plugin from the latest release and load it into `snapd` (`/opt/snap/plugins` is the default location for Snap packages).
 
 #### To build the plugin binary:
 Fork https://github.com/intelsdi-x/snap-plugin-collector-docker
@@ -56,17 +37,16 @@ Clone repo into `$GOPATH/src/github.com/intelsdi-x/`:
 $ git clone https://github.com/<yourGithubID>/snap-plugin-collector-docker.git
 ```
 
-Build the plugin by running make within the cloned repo:
+Build the Snap docker plugin by running make within the cloned repo:
 ```
 $ make
 ```
 It may take a while to pull dependencies if you haven't had them already.
-
-This builds the plugin in `/build/`
+This builds the plugin in `./build/`
 
 ### Configuration and Usage
 * Set up the [Snap framework](https://github.com/intelsdi-x/snap/blob/master/README.md#getting-started)
-* Load the plugin and create a task, see example in [Examples](https://github.com/intelsdi-x/snap-plugin-collector-docker/blob/master/README.md#examples).
+* Load the plugin and create a task, see example in [Examples](#examples).
 
 #### Configuration parameters
 * Set environment variable `PROCFS_MOUNT` to point to the path where proc of host is mounted.
@@ -122,78 +102,39 @@ In one terminal window, start the Snap daemon (in this case with logging set to 
 $ snapd -l 1 -t 0
 ```
 
-In another terminal window:
-Load snap-plugin-collector-docker plugin:
+In another terminal window download and load plugins:
 ```
-$ snapctl plugin load build/linux/x86_64/snap-plugin-collector-docker
-```
-
-Get file plugin for publishing, appropriate for Linux or Darwin:
-```
-$ wget  http://snap.ci.snap-telemetry.io/plugins/snap-plugin-publisher-file/latest/linux/x86_64/snap-plugin-publisher-file
-```
-or
-```
-$ wget  http://snap.ci.snap-telemetry.io/plugins/snap-plugin-publisher-file/latest/darwin/x86_64/snap-plugin-publisher-file
-```
-
-Load file plugin for publishing:
-```
+$ wget http://snap.ci.snap-telemetry.io/plugins/snap-plugin-collector-docker/latest/linux/x86_64/snap-plugin-collector-docker
+$ wget http://snap.ci.snap-telemetry.io/plugins/snap-plugin-publisher-file/latest/linux/x86_64/snap-plugin-publisher-file
+$ chmod 755 snap-plugin-*
+$ snapctl plugin load snap-plugin-collector-docker
 $ snapctl plugin load snap-plugin-publisher-file
 ```
 
-Another terminal window, you can list all of available metrics:
+You can list all of available metrics:
 ```
 $ snapctl metric list
 ```
 
-Create task manifest for writing to a file. You can also use an asterisk - see [`examples/tasks/docker-file.json`](examples/tasks/docker-file.json) for which all exposed metrics for all containers will be collected:
-```json
-{
-  "version": 1,
-  "schedule": {
-    "type": "simple",
-    "interval": "1s"
-  },
-  "workflow": {
-    "collect": {
-      "metrics": {
-        "/intel/docker/*": {}
-      },
-      "config": {},
-      "publish": [
-        {
-          "plugin_name": "file",
-          "config": {
-            "file": "/tmp/snap-docker-file.log"
-          }
-        }
-      ]
-    }
-  }
-}
+Download an [example task file](examples/tasks/docker-file.json) and load it:
 ```
-Create a task by the following command:
-```
-$ snapctl task create -t examples/tasks/docker-file.json
-
-Using Task Manifest to create task
+$ curl -sfLO https://raw.githubusercontent.com/intelsdi-x/snap-plugin-collector-docker/master/examples/tasks/docker-file.json
+$ snapctl task create -t docker-file.json
+Using task manifest to create task
 Task created
-ID: da941d6f-e137-4ef8-97cd-e2b73a8559fb
-Name: Task-da941d6f-e137-4ef8-97cd-e2b73a8559fb
+ID: 02dd7ff4-8106-47e9-8b86-70067cd0a850
+Name: Task-02dd7ff4-8106-47e9-8b86-70067cd0a850
 State: Running
 ```
+
 See  output from snapctl task watch <task_id>
 
 (notice, that below only the fragment of task watcher output has been presented)
 
 ```
-$ snapctl task watch da941d6f-e137-4ef8-97cd-e2b73a8559fb
-
-Watching Task (da941d6f-e137-4ef8-97cd-e2b73a8559fb):
-
+$ snapctl task watch 02dd7ff4-8106-47e9-8b86-70067cd0a850
+Watching Task (02dd7ff4-8106-47e9-8b86-70067cd0a850):
 NAMESPACE                                                                    DATA      		TIMESTAMP
-
 /intel/docker/7720efd76bb8/cgroups/cpu_stats/cpu_usage/total_usage           2.146646e+07       2016-06-21 12:44:09.551811277 +0200 CEST
 /intel/docker/7720efd76bb8/cgroups/cpu_stats/cpu_usage/usage_in_kernelmode   1e+07              2016-06-21 12:44:09.552107446 +0200 CEST
 /intel/docker/7720efd76bb8/cgroups/cpu_stats/cpu_usage/usage_in_usermode     0                  2016-06-21 12:44:09.552146203 +0200 CEST
@@ -203,7 +144,6 @@ NAMESPACE                                                                    DAT
 /intel/docker/root/cgroups/cpu_stats/cpu_usage/total_usage                   2.88984998661e+12  2016-06-21 12:44:09.551811277 +0200 CEST
 /intel/docker/root/cgroups/cpu_stats/cpu_usage/usage_in_kernelmode           6.38e+11            2016-06-21 12:44:09.552107446 +0200 CEST
 /intel/docker/root/cgroups/cpu_stats/cpu_usage/usage_in_usermode             9.4397e+11          2016-06-21 12:44:09.552146203 +0200 CEST
-
 ```
 (Keys `ctrl+c` terminate task watcher)
 
@@ -215,7 +155,9 @@ This plugin is in active development. As we lauch this plugin, we have a few ite
 As we launch this plugin, we do not have any outstanding requirements for the next release. If you have a feature request, please add it as an [issue](https://github.com/intelsdi-x/snap-plugin-collector-docker/issues/new) and/or submit a [pull request](https://github.com/intelsdi-x/snap-plugin-collector-docker/pulls).
 
 ## Community Support
-This repository is one of **many** plugins in the **snap framework**: a powerful telemetry framework. See the full project at http://github.com/intelsdi-x/snap To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support)
+This repository is one of **many** plugins in **Snap**, a powerful telemetry framework. See the full project at http://github.com/intelsdi-x/snap.
+
+To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support).
 
 ## Contributing
 We love contributions!
@@ -223,7 +165,7 @@ We love contributions!
 There's more than one way to give back, from examples to blogs to code updates. See our recommended process in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
-[snap](http://github.com/intelsdi-x/snap), along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
+[Snap](http://github.com/intelsdi-x/snap), along with this plugin, is an Open Source software released under the Apache 2.0 [License](LICENSE).
 
 ## Acknowledgements
 
