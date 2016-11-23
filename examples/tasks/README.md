@@ -25,7 +25,7 @@ Run the script `./run-dockerception.sh`.
 - [docker-compose.yml](docker-compose.yml)
     - A docker compose file which defines the "docker" container.
 - [docker-file.sh](docker-file.sh)
-    - Downloads `snapd`, `snapctl`, `snap-plugin-publisher-file`,
+    - Downloads `snapteld`, `snaptel`, `snap-plugin-publisher-file`,
     `snap-plugin-collector-docker` and starts the task 
     [tasks/docker-file.json](tasks/docker-file.json).
 - [.setup.sh](.setup.sh)

@@ -19,7 +19,7 @@ sleep 20
 # begin assertions
 return_code=0
 echo -n "[task is running] "
-task_list=$(snapctl task list | tail -1)
+task_list=$(snaptel task list | tail -1)
 if echo $task_list | grep -q Running; then
     echo "ok"
 else 
