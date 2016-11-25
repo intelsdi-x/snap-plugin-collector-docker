@@ -27,7 +27,7 @@ In order to use this plugin you need Docker Engine installed. Visit [Install Doc
 ### Installation
 #### Download the plugin binary:
 
-You can get the pre-built binaries for your OS and architecture from the plugin's [GitHub Releases](https://github.com/intelsdi-x/snap-plugin-collector-docker/releases) page. Download the plugin from the latest release and load it into `snapd` (`/opt/snap/plugins` is the default location for Snap packages).
+You can get the pre-built binaries for your OS and architecture from the plugin's [GitHub Releases](https://github.com/intelsdi-x/snap-plugin-collector-docker/releases) page. Download the plugin from the latest release and load it into `snapteld` (`/opt/snap/plugins` is the default location for Snap packages).
 
 #### To build the plugin binary:
 Fork https://github.com/intelsdi-x/snap-plugin-collector-docker
@@ -99,7 +99,7 @@ ad5221e8ae73        ubuntu              "/bin/bash"         36 minutes ago      
 
 In one terminal window, start the Snap daemon (in this case with logging set to 1 and trust disabled):
 ```
-$ snapd -l 1 -t 0
+$ snapteld -l 1 -t 0
 ```
 
 In another terminal window download and load plugins:
@@ -107,19 +107,19 @@ In another terminal window download and load plugins:
 $ wget http://snap.ci.snap-telemetry.io/plugins/snap-plugin-collector-docker/latest/linux/x86_64/snap-plugin-collector-docker
 $ wget http://snap.ci.snap-telemetry.io/plugins/snap-plugin-publisher-file/latest/linux/x86_64/snap-plugin-publisher-file
 $ chmod 755 snap-plugin-*
-$ snapctl plugin load snap-plugin-collector-docker
-$ snapctl plugin load snap-plugin-publisher-file
+$ snaptel plugin load snap-plugin-collector-docker
+$ snaptel plugin load snap-plugin-publisher-file
 ```
 
 You can list all of available metrics:
 ```
-$ snapctl metric list
+$ snaptel metric list
 ```
 
 Download an [example task file](examples/tasks/docker-file.json) and load it:
 ```
 $ curl -sfLO https://raw.githubusercontent.com/intelsdi-x/snap-plugin-collector-docker/master/examples/tasks/docker-file.json
-$ snapctl task create -t docker-file.json
+$ snaptel task create -t docker-file.json
 Using task manifest to create task
 Task created
 ID: 02dd7ff4-8106-47e9-8b86-70067cd0a850
@@ -127,12 +127,12 @@ Name: Task-02dd7ff4-8106-47e9-8b86-70067cd0a850
 State: Running
 ```
 
-See  output from snapctl task watch <task_id>
+See  output from snaptel task watch <task_id>
 
 (notice, that below only the fragment of task watcher output has been presented)
 
 ```
-$ snapctl task watch 02dd7ff4-8106-47e9-8b86-70067cd0a850
+$ snaptel task watch 02dd7ff4-8106-47e9-8b86-70067cd0a850
 Watching Task (02dd7ff4-8106-47e9-8b86-70067cd0a850):
 NAMESPACE                                                                    DATA      		TIMESTAMP
 /intel/docker/7720efd76bb8/cgroups/cpu_stats/cpu_usage/total_usage           2.146646e+07       2016-06-21 12:44:09.551811277 +0200 CEST
