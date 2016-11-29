@@ -8,7 +8,7 @@ If you suspect your issue is a bug, please add as much context as you can using 
 As a basic rule, if you cannot provide enough information to continue addressing the issue within 7 days, a maintainer will close it. We will, however, reopen it if you later provide the information. Thanks again.
 -->
 
-**Snap version** (use `snapctl -v`):
+**Snap version** (use `snaptel -v`):
 
 **Environment**:
 - **Cloud provider or hardware configuration**:
