@@ -367,7 +367,11 @@ func (self *RealFsInfo) updateContainerImagesPath(label string, mounts []*mount.
 }
 
 func diskUsage(dir string) (uint64, error) {
-	out, _ := exec.Command("du", "-s", dir).Output()
+	out, err := exec.Command("du", "-sx", dir).Output()
+	if err != nil {
+		return 0, err
+	}
+
 	val := strings.Fields(string(out))[0]
 	size, err := strconv.ParseUint(val, 10, 64)
 	if err != nil {
