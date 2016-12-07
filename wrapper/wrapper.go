@@ -63,9 +63,10 @@ type Statistics struct {
 	Filesystem      map[string]FilesystemInterface `json:"filesystem"`
 }
 
-// CgroupsExtended holds additional group statsistics like cpuset and shares
+// CgroupsExtended holds additional group statistics like cpuset and shares
+// These stats are not supported by libcontainers lib
 type CgroupExtended struct {
-	Cpuset CpuSet `json:"cpuset"`
+	CpuSet CpuSet `json:"cpuset"`
 	Shares Shares `json:"shares"`
 }
 
@@ -92,20 +93,20 @@ func (cs *CpuSet) GetExtendedStats(path string, ext *CgroupExtended) error {
 		return err
 	}
 
-	ext.Cpuset.Cpus = string(cpus)
-	ext.Cpuset.Mems = string(mems)
+	ext.CpuSet.Cpus = string(cpus)
+	ext.CpuSet.Mems = string(mems)
 
-	ext.Cpuset.MemoryMigrate, err = strconv.ParseUint(strings.Trim(string(memmig), "\n"), 10, 64)
+	ext.CpuSet.MemoryMigrate, err = strconv.ParseUint(strings.Trim(string(memmig), "\n"), 10, 64)
 	if err != nil {
 		return err
 	}
 
-	ext.Cpuset.CpuExclusive, err = strconv.ParseUint(strings.Trim(string(cpuexc), "\n"), 10, 64)
+	ext.CpuSet.CpuExclusive, err = strconv.ParseUint(strings.Trim(string(cpuexc), "\n"), 10, 64)
 	if err != nil {
 		return err
 	}
 
-	ext.Cpuset.MemoryExclusive, err = strconv.ParseUint(strings.Trim(string(memexc), "\n"), 10, 64)
+	ext.CpuSet.MemoryExclusive, err = strconv.ParseUint(strings.Trim(string(memexc), "\n"), 10, 64)
 	if err != nil {
 		return err
 	}
