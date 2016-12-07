@@ -113,7 +113,7 @@ func (dc *DockerClient) GetStatsFromContainer(id string, collectFs bool) (*wrapp
 		workingSet uint64
 
 		container = &docker.Container{}
-		groupWrap = wrapper.Cgroups2Stats // wrapper for cgroup name and interface for stats extraction
+		groupWrap = wrapper.CgroupsToStats // wrapper for cgroup name and interface for stats extraction
 		stats     = wrapper.NewStatistics()
 	)
 

@@ -30,7 +30,7 @@ import (
 )
 
 // Cgroups2Stats holds pointer to appropriate cgroup type (defined in lib `opencontainers`) under cgroup name as a key
-var Cgroups2Stats = map[string]Stats{
+var CgroupsToStats = map[string]Stats{
 	"cpuset":  &CpuSet{},
 	"shares":  &Shares{},
 	"cpu":     &fs.CpuGroup{},

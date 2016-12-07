@@ -33,11 +33,11 @@ func TestWrapperProperDeclaration(t *testing.T) {
 	Convey("Check for proper delcaration of wrapper map", t, func() {
 
 		Convey("Length of map", func() {
-			So(len(Cgroups2Stats), ShouldBeGreaterThan, 0)
+			So(len(CgroupsToStats), ShouldBeGreaterThan, 0)
 		})
 
 		Convey("Each value is of Stats interface type", func() {
-			for _, val := range Cgroups2Stats {
+			for _, val := range CgroupsToStats {
 				_, ok := val.(Stats)
 				So(ok, ShouldBeTrue)
 			}
