@@ -45,7 +45,7 @@ const (
 	// namespace plugin name
 	NS_PLUGIN = "docker"
 	// version of plugin
-	VERSION = 4
+	VERSION = 5
 
 	// each metric starts with prefix "/intel/docker/<docker_id>"
 	lengthOfNsPrefix = 3

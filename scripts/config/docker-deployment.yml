@@ -16,10 +16,6 @@ spec:
               env:
                 - name: SNAP_VERSION
                   value: "latest"
-                - name: PLUGIN_SRC
-                  value: /src
-                - name: RUN_SCRIPT
-                  value: "\"/src/scripts/large_tests.sh\""
               imagePullPolicy: "IfNotPresent"
               securityContext:
                 privileged: true

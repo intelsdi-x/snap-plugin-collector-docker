@@ -20,13 +20,19 @@ limitations under the License.
 package wrapper
 
 import (
+	"io/ioutil"
+	"path/filepath"
+	"strconv"
+	"strings"
+
 	"github.com/opencontainers/runc/libcontainer/cgroups"
 	"github.com/opencontainers/runc/libcontainer/cgroups/fs"
 )
 
 // Cgroups2Stats holds pointer to appropriate cgroup type (defined in lib `opencontainers`) under cgroup name as a key
-var Cgroups2Stats = map[string]Stats{
-	"cpuset":  &fs.CpusetGroup{},
+var CgroupsToStats = map[string]Stats{
+	"cpuset":  &CpuSet{},
+	"shares":  &Shares{},
 	"cpu":     &fs.CpuGroup{},
 	"cpuacct": &fs.CpuacctGroup{},
 	"memory":  &fs.MemoryGroup{},
@@ -50,10 +56,102 @@ type Specification struct {
 
 // Statistics holds all available statistics: network, tcp/tcp6, cgroups and filesystem
 type Statistics struct {
-	Network     []NetworkInterface             `json:"network"`
-	Connection  TcpInterface                   `json:"connection"` //TCP, TCP6 connection stats
-	CgroupStats *cgroups.Stats                 `json:"cgroups"`
-	Filesystem  map[string]FilesystemInterface `json:"filesystem"`
+	Network         []NetworkInterface             `json:"network"`
+	Connection      TcpInterface                   `json:"connection"` //TCP, TCP6 connection stats
+	CgroupStats     *cgroups.Stats                 `json:"cgroups"`
+	CgroupsExtended *CgroupExtended                `json:"cgroups_extended"`
+	Filesystem      map[string]FilesystemInterface `json:"filesystem"`
+}
+
+// CgroupsExtended holds additional group statistics like cpuset and shares
+// These stats are not supported by libcontainers lib
+type CgroupExtended struct {
+	CpuSet CpuSet `json:"cpuset"`
+	Shares Shares `json:"shares"`
+}
+
+// GetExtendedStats extracts CPUs and memory nodes a group can access
+func (cs *CpuSet) GetExtendedStats(path string, ext *CgroupExtended) error {
+	cpus, err := ioutil.ReadFile(filepath.Join(path, "cpuset.cpus"))
+	if err != nil {
+		return err
+	}
+	mems, err := ioutil.ReadFile(filepath.Join(path, "cpuset.mems"))
+	if err != nil {
+		return err
+	}
+	memmig, err := ioutil.ReadFile(filepath.Join(path, "cpuset.memory_migrate"))
+	if err != nil {
+		return err
+	}
+	cpuexc, err := ioutil.ReadFile(filepath.Join(path, "cpuset.cpu_exclusive"))
+	if err != nil {
+		return err
+	}
+	memexc, err := ioutil.ReadFile(filepath.Join(path, "cpuset.mem_exclusive"))
+	if err != nil {
+		return err
+	}
+
+	ext.CpuSet.Cpus = string(cpus)
+	ext.CpuSet.Mems = string(mems)
+
+	ext.CpuSet.MemoryMigrate, err = strconv.ParseUint(strings.Trim(string(memmig), "\n"), 10, 64)
+	if err != nil {
+		return err
+	}
+
+	ext.CpuSet.CpuExclusive, err = strconv.ParseUint(strings.Trim(string(cpuexc), "\n"), 10, 64)
+	if err != nil {
+		return err
+	}
+
+	ext.CpuSet.MemoryExclusive, err = strconv.ParseUint(strings.Trim(string(memexc), "\n"), 10, 64)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetStats is not used. It is defined only to implement interface for CpuSet as a member of Cgroups2Stats
+// It is temporary solution until openlibcontainers lib provides mechanism to extract cpuset values from cgroups
+func (cs *CpuSet) GetStats(path string, stats *cgroups.Stats) error {
+	return nil
+}
+
+// CpuSet stores information regarding subsystem assignment of individual CPUs and memory nodes
+type CpuSet struct {
+	Cpus            string `json:"cpus"`
+	Mems            string `json:"mems"`
+	MemoryMigrate   uint64 `json:"memory_migrate"`
+	CpuExclusive    uint64 `json:"cpu_exclusive"`
+	MemoryExclusive uint64 `json:"memory_exclusive"`
+}
+
+// Shares stores information regarding relative share of CPU time available to the tasks in a group
+type Shares struct {
+	Cpu uint64 `json:"cpu"`
+}
+
+// GetExtendedStats extracts integer value from cpu.shares file in given group
+func (s *Shares) GetExtendedStats(path string, ext *CgroupExtended) error {
+	cpu, err := ioutil.ReadFile(filepath.Join(path, "cpu.shares"))
+	if err != nil {
+		return err
+	}
+	ext.Shares.Cpu, err = strconv.ParseUint(strings.Trim(string(cpu), "\n"), 10, 64)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetStats is not used. It is defined only to implement interface for Shares as a member of Cgroups2Stats
+// It is temporary solution until openlibcontainers lib provides mechanism to extract shares from cgroups
+func (s *Shares) GetStats(path string, stats *cgroups.Stats) error {
+	return nil
 }
 
 // NetworkInterface holds name of network interface and its statistics (rx_bytes, tx_bytes, etc.)
@@ -177,8 +275,9 @@ var listOfMemoryStats = []string{
 // NewStatistics returns pointer to initialized Statistics
 func NewStatistics() *Statistics {
 	return &Statistics{
-		Network:     []NetworkInterface{},
-		CgroupStats: newCgroupsStats(),
+		Network:         []NetworkInterface{},
+		CgroupStats:     newCgroupsStats(),
+		CgroupsExtended: &CgroupExtended{},
 		Connection: TcpInterface{
 			Tcp:  TcpStat{},
 			Tcp6: TcpStat{},

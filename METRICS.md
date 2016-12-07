@@ -105,6 +105,12 @@ memory_stats/stats/total_rss_huge | uint64 | The total number of bytes of anonym
 memory_stats/stats/total_swap | uint64 | The total number of bytes of swap usage <sup>(1)</sup>
 memory_stats/stats/total_unevictable | uint64 | The total number of bytes of memory that cannot be reclaimed <sup>(1)</sup>
 memory_stats/stats/total_writeback | uint64 | The total number of bytes of file/anon cache that are queued for syncing to disk <sup>(1)</sup>
+cpuset/cpu_exclusive | uint64 | contains a flag (0 or 1) that specifies whether cpusets other than this one and its parents and children can share the CPUs specified for this cpuset
+cpuset/memory_exclusive | uint64 | contains a flag (0 or 1) that specifies whether other cpusets can share the memory nodes specified for the cpuset
+cpuset/memory_migrate | uint64 | contains a flag (0 or 1) that specifies whether a page in memory should migrate to a new node if the values in cpuset.mems change
+cpuset/cpus | string | specifies the CPUs that tasks in this cgroup are permitted to access
+cpuset/mems | string | specifies the memory nodes that tasks in this cgroup are permitted to access
+shares/cpu | uint64 | contains an integer value that specifies a relative share of CPU time available to the tasks in a cgroup
 
 <sup>(1)</sup> Hierarchical version of cgroups counter which in addition to the cgroup's own value includes the sum of all hierarchical children's values
 

@@ -113,7 +113,7 @@ func (dc *DockerClient) GetStatsFromContainer(id string, collectFs bool) (*wrapp
 		workingSet uint64
 
 		container = &docker.Container{}
-		groupWrap = wrapper.Cgroups2Stats // wrapper for cgroup name and interface for stats extraction
+		groupWrap = wrapper.CgroupsToStats // wrapper for cgroup name and interface for stats extraction
 		stats     = wrapper.NewStatistics()
 	)
 
@@ -137,8 +137,21 @@ func (dc *DockerClient) GetStatsFromContainer(id string, collectFs bool) (*wrapp
 			fmt.Fprintln(os.Stderr, "Cannot found subsystem path for cgroup=", cg, " for container id=", container)
 			continue
 		}
-		// get cgroup stats for given docker
-		err = stat.GetStats(groupPath, stats.CgroupStats)
+
+		switch cg {
+		case "cpuset":
+			cpuset := wrapper.CpuSet{}
+			// get cpuset group stats
+			err = cpuset.GetExtendedStats(groupPath, stats.CgroupsExtended)
+		case "shares":
+			// get cpu.shares stats
+			shares := wrapper.Shares{}
+			err = shares.GetExtendedStats(groupPath, stats.CgroupsExtended)
+		default:
+			// get cgroup stats for given docker
+			err = stat.GetStats(groupPath, stats.CgroupStats)
+		}
+
 		if err != nil {
 			// just log about it
 			if isHost(id) {
@@ -258,6 +271,11 @@ func (dc *DockerClient) ListContainersAsMap() (map[string]docker.APIContainers, 
 func getSubsystemPath(subsystem string, id string) (string, error) {
 	var subsystemPath string
 	systemSlice := "system.slice"
+	// hack for finding proper mount point for shares
+	// cpu shares are part of cpu group, but openlibcontainers does not support it
+	if subsystem == "shares" {
+		subsystem = "cpu"
+	}
 	groupPath, err := cgroups.FindCgroupMountpoint(subsystem)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "[WARNING] Could not find mount point for %v\n", subsystem)
