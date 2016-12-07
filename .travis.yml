@@ -3,7 +3,7 @@ sudo: false
 language: go
 go:
 - 1.6.3
-- 1.7.1
+- 1.7.3
 env:
   global:
   - ORG_PATH=/home/travis/gopath/src/github.com/intelsdi-x
@@ -42,7 +42,7 @@ deploy:
   on:
     repo: intelsdi-x/snap-plugin-collector-docker
     branch: master
-    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.1"
+    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.3"
 - provider: s3
   access_key_id: AKIAINMB43VSSPFZISAA
   secret_access_key:
@@ -56,7 +56,7 @@ deploy:
   on:
     repo: intelsdi-x/snap-plugin-collector-docker
     tags: true
-    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.1"
+    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.3"
 - provider: releases
   api_key:
     secure: VWziYXvNx2jnCHAAXx0sIC5jgOsnP7DSQmUVAtttwupHQGnYy1u2q0bZam5y3IPlT4S+eYWF556m2uB66VR8LoHMTExD1kLYn3FKfAYK6FCEN6avdvzHo8rhEMz2rj3Mhre62wwVU3h0cc3CGf7Blkx5Yn0Vm1jYbmvG0JfMhLjxRFIF+1zMgUCJ7gvd78VyDD6MSHMDN9lT9+YStOQQW5R8zvtCTRRbeoaFcRkbo8cZPMO16KaB9iOdI18QjjwP9B/+ZGZvCQDsWJRe/IujSLcupPhFEorIY6fT+JnJ7T3MY6cEGrRBKnKWpqnHuayrtLV9I6D510madekJNZOaAtUTNB2athWw7qZxIkA/JRo5V5H9jANMJ0e/ajntEpE84NIQn2EtLpv9LUvgN3HVxUUbLdLNNIsK32ZipJdwYiO2NO8NzJQ0hNrNIZosw+7GjwV2SQG291iXqkaswpQVdCSiRN0DVipVCXraQowii8DvfPBux3jAPM6HFo7FBWDiJQQVz/9PGwLuO12BWuvBVjl/Tk0KP/2JkXlcKmih/e1j+AS+I6pkH73+xjzdKMh/rlUz4jIwAxoUb2FxnWdfBTsvstGzHuyiZPEErMtoei4qgkEpUxsIqR7G8ftAHJ/47lbic6mLA1xYvfRc8A2JMEB6z+D6yTdceUfaz9VuHRQ=
@@ -66,4 +66,4 @@ deploy:
   on:
     repo: intelsdi-x/snap-plugin-collector-docker
     tags: true
-    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.1"
+    condition: $TEST_TYPE = "build" && $TRAVIS_GO_VERSION = "1.7.3"
