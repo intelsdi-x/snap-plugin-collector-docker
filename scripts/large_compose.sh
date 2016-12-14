@@ -18,7 +18,7 @@ export PLUGIN_DEST="/${__proj_name}"
 
 TEST_TYPE="${TEST_TYPE:-"large"}"
 
-docker_folder="${__proj_dir}/examples/tasks"
+docker_folder="${__proj_dir}/examples"
 
 _docker_project () {
   (cd "${docker_folder}" && "$@")
@@ -33,7 +33,7 @@ _debug "running test: ${TEST_TYPE}"
 set +e
 
 RUN_TESTS="\"${PLUGIN_DEST}/scripts/large_tests.sh\""
-_docker_project docker-compose exec docker sh -c "export LOG_LEVEL=$LOG_LEVEL; export RUN_SCRIPT=$RUN_TESTS ; /${__proj_name}/examples/tasks/run-dockerception.sh" 
+_docker_project docker-compose exec docker sh -c "export LOG_LEVEL=$LOG_LEVEL; export RUN_SCRIPT=$RUN_TESTS ; /${__proj_name}/examples/run-dockerception.sh"
 test_res=$?
 set -e
 echo "exit code from large_compose $test_res"
