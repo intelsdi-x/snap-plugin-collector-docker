@@ -1,101 +1,32 @@
 package: github.com/intelsdi-x/snap-plugin-collector-docker
 import:
-- package: github.com/Sirupsen/logrus
-  version: cd7d1bbe41066b6c1f19780f895901052150a575
 - package: github.com/docker/docker
-  version: 59231ea6d8bdff3d32140d7ab28aeb98fb93ebff
+  version: ^1.13.0-rc4
   subpackages:
   - pkg/mount
-- package: github.com/docker/go-units
-  version: 0bbddae09c5a5419a8c6dcdd7ff90da3d450393b
 - package: github.com/fsouza/go-dockerclient
-  version: 412c004d923b7b89701e7a1632de83f843657a03
-  subpackages:
-  - external/github.com/Sirupsen/logrus
-  - external/github.com/docker/docker/opts
-  - external/github.com/docker/docker/pkg/archive
-  - external/github.com/docker/docker/pkg/fileutils
-  - external/github.com/docker/docker/pkg/homedir
-  - external/github.com/docker/docker/pkg/ioutils
-  - external/github.com/docker/docker/pkg/parsers
-  - external/github.com/docker/docker/pkg/pools
-  - external/github.com/docker/docker/pkg/promise
-  - external/github.com/docker/docker/pkg/stdcopy
-  - external/github.com/docker/docker/pkg/system
-  - external/github.com/docker/docker/pkg/ulimit
-  - external/github.com/docker/docker/pkg/units
-  - external/github.com/docker/docker/volume
-  - external/github.com/opencontainers/runc/libcontainer/user
-- package: github.com/golang/protobuf
-  version: 8616e8ee5e20a1704615e6c8d7afcdac06087a67
-  subpackages:
-  - proto
 - package: github.com/intelsdi-x/snap-plugin-utilities
-  version: 0b327aae781a2e94b414be121d5ac4668750156c
   subpackages:
   - ns
-  - str
 - package: github.com/intelsdi-x/snap
-  version: 8163e12d61fcd6f87151a5658da7f718f3785e57
+  version: ^1.0.0
   subpackages:
   - control/plugin
   - control/plugin/cpolicy
-  - control/plugin/encoding
-  - control/plugin/encrypter
-  - control/plugin/rpc
   - core
-  - core/cdata
-  - core/ctypes
-  - core/serror
-  - grpc/common
-  - pkg/ctree
-  - pkg/schedule
-  - scheduler/wmap
 - package: github.com/mistifyio/go-zfs
-  version: 22c9b32c84eb0d0c6f4043b6e90fc94073de92fa
-- package: github.com/oleiade/reflections
-  version: 632977f98cd34d217c4b57d0840ec188b3d3dcaf
+  version: ^2.1.1
 - package: github.com/opencontainers/runc
-  version: 4c767d7046a79a7cf29b810742e5f7f2564f2d0c
+  version: ^1.0.0-rc2
   subpackages:
   - libcontainer/cgroups
   - libcontainer/cgroups/fs
-  - libcontainer/configs
-  - libcontainer/system
-- package: github.com/pborman/uuid
-  version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
-- package: github.com/robfig/cron
-  version: 32d9c273155a0506d27cf73dd1246e86a470997e
-- package: golang.org/x/net
-  version: 154d9f9ea81208afed560f4cf27b4860c8ed1904
-  subpackages:
-  - context
-  - http2
-  - http2/hpack
-  - internal/timeseries
-  - lex/httplex
-  - trace
-- package: golang.org/x/sys
-  version: 7f918dd405547ecb864d14a8ecbbfe205b5f930f
-  subpackages:
-  - unix
-- package: google.golang.org/grpc
-  version: 88aeffff979aa77aa502cb011423d0a08fa12c5a
-  subpackages:
-  - codes
-  - credentials
-  - grpclog
-  - internal
-  - metadata
-  - naming
-  - peer
-  - transport
-- package: gopkg.in/yaml.v2
-  version: c1cd2254a6dd314c9d73c338c12688c9325d85c6
 - package: github.com/stretchr/testify
+  version: ^1.1.4
   subpackages:
   - mock
 testImport:
 - package: github.com/smartystreets/goconvey
+  version: ^1.6.2
   subpackages:
   - convey

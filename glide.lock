@@ -1,16 +1,16 @@
-hash: 07c071fcac0b40632dbb117acb111caf63b150479bd04a94cd221f157e600211
-updated: 2016-11-25T11:56:55.871733827+01:00
+hash: 578bb3c6da82ed5d11bbe6af760040740f2404a4eb8ae38e5005ca5fb179ca48
+updated: 2016-12-21T14:52:44.71659103-08:00
 imports:
 - name: github.com/davecgh/go-spew
-  version: 04cdfd42973bb9c8589fd6a731800cf222fde1a9
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   subpackages:
   - spew
 - name: github.com/docker/docker
-  version: 59231ea6d8bdff3d32140d7ab28aeb98fb93ebff
+  version: 88862e707affccf9c46347361689b2ffef39dc5c
   subpackages:
   - pkg/mount
 - name: github.com/docker/go-units
-  version: 0bbddae09c5a5419a8c6dcdd7ff90da3d450393b
+  version: 9b001659dd36225e356b4467c465d732e745f53d
 - name: github.com/fsouza/go-dockerclient
   version: 412c004d923b7b89701e7a1632de83f843657a03
   subpackages:
@@ -29,25 +29,20 @@ imports:
   - external/github.com/docker/docker/pkg/units
   - external/github.com/docker/docker/volume
   - external/github.com/opencontainers/runc/libcontainer/user
-- name: github.com/golang/protobuf
-  version: 8616e8ee5e20a1704615e6c8d7afcdac06087a67
-  subpackages:
-  - proto
 - name: github.com/intelsdi-x/snap
-  version: 8163e12d61fcd6f87151a5658da7f718f3785e57
+  version: 8905198aaab5bfb6d50a747477ca401e3a7a33ab
   subpackages:
   - control/plugin
   - control/plugin/cpolicy
   - control/plugin/encoding
   - control/plugin/encrypter
-  - control/plugin/rpc
   - core
   - core/cdata
   - core/ctypes
   - core/serror
-  - grpc/common
   - pkg/ctree
   - pkg/schedule
+  - pkg/stringutils
   - scheduler/wmap
 - name: github.com/intelsdi-x/snap-plugin-utilities
   version: 0b327aae781a2e94b414be121d5ac4668750156c
@@ -55,18 +50,17 @@ imports:
   - ns
   - str
 - name: github.com/mistifyio/go-zfs
-  version: 22c9b32c84eb0d0c6f4043b6e90fc94073de92fa
+  version: cdc0f941c4d0e0e94d85348285568d921891e138
 - name: github.com/oleiade/reflections
   version: 632977f98cd34d217c4b57d0840ec188b3d3dcaf
 - name: github.com/opencontainers/runc
-  version: 4c767d7046a79a7cf29b810742e5f7f2564f2d0c
+  version: c91b5bea4830a57eac7882d7455d59518cdf70ec
   subpackages:
   - libcontainer/cgroups
   - libcontainer/cgroups/fs
   - libcontainer/configs
   - libcontainer/system
-- name: github.com/pborman/uuid
-  version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
+  - libcontainer/utils
 - name: github.com/pmezard/go-difflib
   version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
   subpackages:
@@ -74,38 +68,18 @@ imports:
 - name: github.com/robfig/cron
   version: 32d9c273155a0506d27cf73dd1246e86a470997e
 - name: github.com/Sirupsen/logrus
-  version: cd7d1bbe41066b6c1f19780f895901052150a575
+  version: be52937128b38f1d99787bb476c789e2af1147f1
 - name: github.com/stretchr/objx
   version: cbeaeb16a013161a98496fad62933b1d21786672
 - name: github.com/stretchr/testify
-  version: 18a02ba4a312f95da08ff4cfc0055750ce50ae9e
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
   subpackages:
   - assert
   - mock
-- name: golang.org/x/net
-  version: 154d9f9ea81208afed560f4cf27b4860c8ed1904
-  subpackages:
-  - context
-  - http2
-  - http2/hpack
-  - internal/timeseries
-  - lex/httplex
-  - trace
 - name: golang.org/x/sys
-  version: 7f918dd405547ecb864d14a8ecbbfe205b5f930f
+  version: c8bc69bc2db9c57ccf979550bc69655df5039a8a
   subpackages:
   - unix
-- name: google.golang.org/grpc
-  version: 88aeffff979aa77aa502cb011423d0a08fa12c5a
-  subpackages:
-  - codes
-  - credentials
-  - grpclog
-  - internal
-  - metadata
-  - naming
-  - peer
-  - transport
 - name: gopkg.in/yaml.v2
   version: c1cd2254a6dd314c9d73c338c12688c9325d85c6
 testImports:
@@ -121,7 +95,7 @@ testImports:
   - internal/go-render/render
   - internal/oglematchers
 - name: github.com/smartystreets/goconvey
-  version: 995f5b2e021c69b8b028ba6d0b05c1dd500783db
+  version: d4c757aa9afd1e2fc1832aaab209b5794eb336e1
   subpackages:
   - convey
   - convey/gotest
