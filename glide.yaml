@@ -35,6 +35,9 @@ import:
   subpackages:
   - ns
   - str
+- package: github.com/intelsdi-x/snap-plugin-lib-go
+  subpackages:
+  - v1/plugin
 - package: github.com/intelsdi-x/snap
   version: 8163e12d61fcd6f87151a5658da7f718f3785e57
   subpackages:

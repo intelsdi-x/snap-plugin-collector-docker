@@ -37,6 +37,7 @@ import (
 
 	dock "github.com/fsouza/go-dockerclient"
 	utils "github.com/intelsdi-x/snap-plugin-utilities/ns"
+	pluginlib "github.com/intelsdi-x/snap-plugin-lib-go/v1/plugin"
 )
 
 const (
@@ -85,16 +86,21 @@ var definedDynamicElements = map[string]dynamicElement{
 	"percpu_usage": dynamicElement{"cpu_id", "an id of cpu"},
 }
 
-// New returns initialized docker plugin or error if failed to connect to docker deamon
-func New() (*docker, error) {
-	dc, err := client.NewDockerClient()
+func (d *docker) init_client(docker_endpoint string) error {
+	dc, err := client.NewDockerClient(docker_endpoint)
 	if err != nil {
-		return nil, err
+		return err
 	}
+	d.client = dc
+	return nil
+}
 
+
+// New returns initialized docker plugin or error if failed to connect to docker daemon
+func New() (*docker, error) {
 	return &docker{
 		containers: map[string]containerData{},
-		client:     dc,
+		client:     nil,
 		list:       map[string]dock.APIContainers{},
 	}, nil
 }
@@ -102,6 +108,17 @@ func New() (*docker, error) {
 // CollectMetrics retrieves values of requested metrics
 func (d *docker) CollectMetrics(mts []plugin.MetricType) ([]plugin.MetricType, error) {
 	var err error
+
+	conf, err := getDockerConfig(mts[0])
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.init_client(conf["endpoint"])
+	if err != nil {
+		return nil, err
+	}
+
 	metrics := []plugin.MetricType{}
 	d.list = map[string]dock.APIContainers{}
 
@@ -357,8 +374,38 @@ func (d *docker) CollectMetrics(mts []plugin.MetricType) ([]plugin.MetricType, e
 
 // GetConfigPolicy returns plugin config policy
 func (d *docker) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
-	return cpolicy.New(), nil
+	policy := pluginlib.NewConfigPolicy()
+	configKey := []string{"intel", "docker"}
+
+	policy.NewStringRule(configKey,
+		"endpoint",
+		false,
+		"unix:///var/run/docker.sock")
+
+	return *policy, nil
 }
+
+func getDockerConfig(metric pluginlib.Metric) (map[string]string, error) {
+	config := make(map[string]string)
+	values := []string{"endpoint", }
+	var err error
+	for _, v := range values {
+		config[v], err = getStringFromConfig(metric, v)
+		if err != nil {
+			return config, err
+		}
+	}
+	return config, nil
+}
+
+func getStringFromConfig(metric pluginlib.Metric, value string) (string, error) {
+	conf, err := metric.Config.GetString(value)
+	if err != nil {
+		return "", err
+	}
+	return conf, nil
+}
+
 
 // GetMetricTypes returns list of available metrics
 func (d *docker) GetMetricTypes(_ plugin.ConfigType) ([]plugin.MetricType, error) {
