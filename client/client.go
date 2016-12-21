@@ -39,7 +39,6 @@ import (
 )
 
 const (
-	endpoint         string = "unix:///var/run/docker.sock"
 	dockerVersionKey string = "Version"
 )
 
@@ -68,7 +67,7 @@ type deviceInfo struct {
 }
 
 // NewDockerClient returns dockerClient instance ready for communication with the server endpoint `unix:///var/run/docker.sock`
-func NewDockerClient() (*DockerClient, error) {
+func NewDockerClient(endpoint string) (*DockerClient, error) {
 	client, err := docker.NewClient(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("Cannot initialize docker client instance with the given server endpoint `%s`, err=%v", endpoint, err)

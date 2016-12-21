@@ -9,7 +9,11 @@
       "metrics": {
         "/intel/docker/*": {}
       },
-      "config": {},
+      "config": {
+        "/intel/docker/*": {
+          "endpoint": "unix:///var/run/docker.sock",
+        }
+      },
       "publish": [
         {
           "plugin_name": "file",
