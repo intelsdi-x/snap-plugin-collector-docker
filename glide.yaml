@@ -8,8 +8,7 @@ import:
 - package: github.com/intelsdi-x/snap-plugin-utilities
   subpackages:
   - ns
-- package: github.com/intelsdi-x/snap
-  version: ^1.0.0
+- package: github.com/intelsdi-x/snap-plugin-lib-go
   subpackages:
   - control/plugin
   - control/plugin/cpolicy

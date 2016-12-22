@@ -1,5 +1,5 @@
-hash: b16b60656affc20f24e8a5d8d781f40dd1aa23d6befead85827efb01cfc78d56
-updated: 2016-12-22T11:22:53.702634832+02:00
+hash: c588241f3eb138b88e4b17b7221ad00c3ea801cae42d2240752a5b0ec493e244
+updated: 2016-12-22T11:44:25.425795245+02:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
@@ -29,8 +29,12 @@ imports:
   - external/github.com/docker/docker/pkg/units
   - external/github.com/docker/docker/volume
   - external/github.com/opencontainers/runc/libcontainer/user
+- name: github.com/golang/protobuf
+  version: 888eb0692c857ec880338addf316bd662d5e630e
+  subpackages:
+  - proto
 - name: github.com/intelsdi-x/snap
-  version: 8905198aaab5bfb6d50a747477ca401e3a7a33ab
+  version: 5c1177efc47eccc10dc459e3be44083372ea08c3
   subpackages:
   - control/plugin
   - control/plugin/cpolicy
@@ -42,17 +46,22 @@ imports:
   - core/serror
   - pkg/ctree
   - pkg/schedule
-  - pkg/stringutils
   - scheduler/wmap
 - name: github.com/intelsdi-x/snap-plugin-lib-go
   version: 4b5999a62ffb7604f173c1ab3c2205ba8b559624
   subpackages:
+  - control/plugin
+  - control/plugin/cpolicy
+  - core
   - v1/plugin
+  - v1/plugin/rpc
 - name: github.com/intelsdi-x/snap-plugin-utilities
   version: 0b327aae781a2e94b414be121d5ac4668750156c
   subpackages:
   - ns
   - str
+- name: github.com/julienschmidt/httprouter
+  version: 8c199fb6259ffc1af525cc3ad52ee60ba8359669
 - name: github.com/mistifyio/go-zfs
   version: cdc0f941c4d0e0e94d85348285568d921891e138
 - name: github.com/oleiade/reflections
@@ -80,10 +89,30 @@ imports:
   subpackages:
   - assert
   - mock
+- name: golang.org/x/net
+  version: 04557861f124410b768b1ba5bb3a91b705afbfc6
+  subpackages:
+  - context
+  - http2
+  - http2/hpack
+  - internal/timeseries
+  - lex/httplex
+  - trace
 - name: golang.org/x/sys
   version: c8bc69bc2db9c57ccf979550bc69655df5039a8a
   subpackages:
   - unix
+- name: google.golang.org/grpc
+  version: 0032a855ba5c8a3c8e0d71c2deef354b70af1584
+  subpackages:
+  - codes
+  - credentials
+  - grpclog
+  - internal
+  - metadata
+  - naming
+  - peer
+  - transport
 - name: gopkg.in/yaml.v2
   version: c1cd2254a6dd314c9d73c338c12688c9325d85c6
 testImports:
