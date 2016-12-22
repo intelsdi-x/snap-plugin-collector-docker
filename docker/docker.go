@@ -83,16 +83,21 @@ var definedDynamicElements = map[string]dynamicElement{
 	"percpu_usage": dynamicElement{"cpu_id", "an id of cpu"},
 }
 
+func (d *docker) initClient(endpoint string) error {
+	if d.client == nil {
+		dc, err := client.NewDockerClient(endpoint)
+		if err != nil {
+			return err
+		}
+		d.client = dc
+	}
+	return nil
+}
+
 // New returns initialized docker plugin or error if failed to connect to docker deamon
 func New() (*docker, error) {
-	dc, err := client.NewDockerClient()
-	if err != nil {
-		return nil, err
-	}
-
 	return &docker{
 		containers: map[string]containerData{},
-		client:     dc,
 		list:       map[string]dock.APIContainers{},
 	}, nil
 }
@@ -101,6 +106,17 @@ func New() (*docker, error) {
 func (d *docker) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error) {
 	var err error
 	metrics := []plugin.Metric{}
+
+	conf, err := getDockerConfig(mts[0])
+	if err != nil {
+		return nil, err
+	}
+
+	err = d.initClient(conf["endpoint"])
+	if err != nil {
+		return nil, err
+	}
+
 	d.list = map[string]dock.APIContainers{}
 
 	// get list of possible network metrics
@@ -212,7 +228,7 @@ func (d *docker) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error) {
 					device := metricName[0]
 					fs_device := d.containers[id].Stats.Filesystem[device]
 					if fs_device.Device == "" {
-						return nil, fmt.Errorf("In metric %s the given device name is invalid (no stats for this device)", mt.Namespace.Strings())
+						return nil, fmt.Errorf("In metric %s the given device name is invalid (no stats for this device)", strings.Join(mt.Namespace.Strings(), "/"))
 					}
 
 					devices = append(devices, metricName[0])
@@ -247,7 +263,7 @@ func (d *docker) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error) {
 					labelKey := metricName[0]
 					c_label := d.containers[id].Info.Labels[labelKey]
 					if c_label == "" {
-						return nil, fmt.Errorf("In metric %s the given label is invalid (no value for this label key)", mt.Namespace.Strings())
+						return nil, fmt.Errorf("In metric %s the given label is invalid (no value for this label key)", strings.Join(mt.Namespace.Strings(), "/"))
 					}
 
 					labelKeys = append(labelKeys, metricName[0])
@@ -285,7 +301,7 @@ func (d *docker) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error) {
 				} else {
 					netInterface := metricName[0]
 					if _, ok := ifaceMap[netInterface]; !ok {
-						return nil, fmt.Errorf("In metric %s the given network interface is invalid (no stats for this net interface)", mt.Namespace.Strings())
+						return nil, fmt.Errorf("In metric %s the given network interface is invalid (no stats for this net interface)", strings.Join(mt.Namespace.Strings(), "/"))
 					}
 					netInterfaces = append(netInterfaces, metricName[0])
 				}
@@ -328,10 +344,10 @@ func (d *docker) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error) {
 				} else {
 					cpuID, err := strconv.Atoi(metricName[0])
 					if err != nil {
-						return nil, fmt.Errorf("In metric %s the given cpu id is invalid, err=%v", mt.Namespace.Strings(), err)
+						return nil, fmt.Errorf("In metric %s the given cpu id is invalid, err=%v", strings.Join(mt.Namespace.Strings(), "/"), err)
 					}
 					if cpuID > numOfCPUs || cpuID < 0 {
-						return nil, fmt.Errorf("In metric %s the given cpu id is invalid, expected value in range 0-%d", mt.Namespace.Strings(), numOfCPUs)
+						return nil, fmt.Errorf("In metric %s the given cpu id is invalid, expected value in range 0-%d", strings.Join(mt.Namespace.Strings(), "/"), numOfCPUs)
 					}
 
 					metric := plugin.Metric{
@@ -463,10 +479,10 @@ func (d *docker) getRequestedIDs(mt ...plugin.Metric) ([]string, error) {
 	for _, m := range mt {
 		ns := m.Namespace.Strings()
 		if ok := validateMetricNamespace(ns); !ok {
-			return nil, fmt.Errorf("Invalid name of metric %+s", ns)
+			return nil, fmt.Errorf("Invalid name of metric %+s", strings.Join(ns, "/"))
 		}
 
-		rid := m.Namespace.Strings()[2]
+		rid := ns[2]
 		if rid == "*" {
 			// all available dockers are requested
 			rids := d.availableContainers()
@@ -539,10 +555,10 @@ func getDockerConfig(metric plugin.Metric) (map[string]string, error) {
 	return config, nil
 }
 
-func getStringFromConfig(metric plugin.Metric, value string) (string, error) {
-	conf, err := metric.Config.GetString(value)
+func getStringFromConfig(metric plugin.Metric, key string) (string, error) {
+	value, err := metric.Config.GetString(key)
 	if err != nil {
 		return "", err
 	}
-	return conf, nil
+	return value, nil
 }
