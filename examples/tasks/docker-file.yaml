@@ -1,0 +1,17 @@
+max-failures: 10
+schedule:
+  interval: 5s
+  type: simple
+version: 1
+workflow:
+  collect:
+    config:
+      /intel/docker:
+        endpoint: tcp://192.168.0.114:2375
+    metrics:
+      /intel/docker/*: {}
+    publish:
+      -
+        config:
+          file: /tmp/snap-docker-file.log
+        plugin_name: file
