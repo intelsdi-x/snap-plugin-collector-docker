@@ -90,7 +90,6 @@ func (d *docker) initClient(endpoint string) error {
 			return err
 		}
 		d.client = dc
-		return nil
 	}
 	return nil
 }
@@ -99,7 +98,6 @@ func (d *docker) initClient(endpoint string) error {
 func New() (*docker, error) {
 	return &docker{
 		containers: map[string]containerData{},
-		client:     nil,
 		list:       map[string]dock.APIContainers{},
 	}, nil
 }

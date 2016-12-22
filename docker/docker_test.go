@@ -60,20 +60,22 @@ var mockListOfContainers = map[string]dock.APIContainers{
 	},
 }
 
+var metricConf = plugin.Config{"endpoint": "unix:///var/run/docker.sock"}
+
 var mockMts = []plugin.Metric{
 	// representation of metrics grouped as `spec`
 	plugin.Metric{
 		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("spec", "creation_time"),
-		Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+		Config: metricConf,
 	},
 	// representation of metrics grouped as `cgroup/cpu_stats`
 	plugin.Metric{
 		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("stats", "cgroups", "cpu_stats", "cpu_usage", "total_usage"),
-		Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+		Config: metricConf,
 	},
 	plugin.Metric{
 		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
@@ -81,7 +83,7 @@ var mockMts = []plugin.Metric{
 			AddStaticElements("stats", "cgroups", "cpu_stats", "cpu_usage", "percpu_usage").
 			AddDynamicElement("cpu_id", "an id of cpu").
 			AddStaticElement("value"),
-		Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+		Config: metricConf,
 	},
 
 	// representation of metrics grouped as `cgroups/memory_stats`
@@ -89,19 +91,19 @@ var mockMts = []plugin.Metric{
 		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("stats", "cgroups", "memory_stats", "cache"),
-		Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+		Config: metricConf,
 	},
 	plugin.Metric{
 		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("stats", "cgroups", "memory_stats", "stats", "pgpgin"),
-		Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+		Config: metricConf,
 	},
 	plugin.Metric{
 		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("stats", "cgroups", "memory_stats", "usage", "max_usage"),
-		Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+		Config: metricConf,
 	},
 
 	// representation of metrics grouped as `connection`
@@ -109,13 +111,13 @@ var mockMts = []plugin.Metric{
 		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("stats", "connection", "tcp", "established"),
-		Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+		Config: metricConf,
 	},
 	plugin.Metric{
 		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("stats", "connection", "tcp6", "established"),
-		Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+		Config: metricConf,
 	},
 
 	// representation of metrics grouped as `filesystem`
@@ -125,7 +127,7 @@ var mockMts = []plugin.Metric{
 			AddStaticElements("stats", "filesystem").
 			AddDynamicElement("device_name", "a name of filesystem device").
 			AddStaticElement("usage"),
-		Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+		Config: metricConf,
 	},
 
 	// representation of metrics grouped as `network`
@@ -135,7 +137,7 @@ var mockMts = []plugin.Metric{
 			AddStaticElements("stats", "network").
 			AddDynamicElement("network_interface", "a name of network interface or 'total' for aggregate").
 			AddStaticElement("rx_bytes"),
-		Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+		Config: metricConf,
 	},
 	plugin.Metric{
 		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
@@ -143,7 +145,7 @@ var mockMts = []plugin.Metric{
 			AddStaticElements("stats", "network").
 			AddDynamicElement("network_interface", "a name of network interface or 'total' for aggregate").
 			AddStaticElement("tx_bytes"),
-		Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+		Config: metricConf,
 	},
 	plugin.Metric{
 		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
@@ -151,7 +153,7 @@ var mockMts = []plugin.Metric{
 			AddStaticElements("spec", "labels").
 			AddDynamicElement("label_key", "a key of container's label").
 			AddStaticElement("value"),
-		Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+		Config: metricConf,
 	},
 }
 
@@ -257,7 +259,7 @@ func TestCollectMetrics(t *testing.T) {
 				Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
 					AddDynamicElement("docker_id", "an id of docker container").
 					AddStaticElements("stats", "cgroups", "memory_stats", "cache"),
-				Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+				Config: metricConf,
 			}
 
 			Convey("succefull when specified container exists", func() {
@@ -307,7 +309,7 @@ func TestCollectMetrics(t *testing.T) {
 						Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
 							AddDynamicElement("docker_id", "an id of docker container").
 							AddStaticElements("stats", "cgroups", "memory_stats", "cache"),
-						Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+						Config: metricConf,
 					}
 					// specify requested docker id in invalid way (shorter than 12 chars)
 					mockMt.Namespace[2].Value = "1"
@@ -326,7 +328,7 @@ func TestCollectMetrics(t *testing.T) {
 					AddStaticElements("stats", "cgroups", "cpu_stats", "cpu_usage", "percpu_usage").
 					AddDynamicElement("cpu_id", "an id of cpu").
 					AddStaticElement("value"),
-				Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+				Config: metricConf,
 			}
 			// specify docker_id and cpu_id of requested metric type
 			mockMt.Namespace[2].Value = mockDockerID
@@ -372,7 +374,7 @@ func TestCollectMetrics(t *testing.T) {
 					AddStaticElements("stats", "filesystem").
 					AddDynamicElement("device_name", "a name of filesystem device").
 					AddStaticElement("usage"),
-				Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+				Config: metricConf,
 			}
 			mockMt.Namespace[2].Value = mockDockerID
 
@@ -401,7 +403,7 @@ func TestCollectMetrics(t *testing.T) {
 					AddStaticElements("stats", "network").
 					AddDynamicElement("network_interface", "a name of network interface or 'total' for aggregate").
 					AddStaticElement("rx_bytes"),
-				Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+				Config: metricConf,
 			}
 			// specify docker_id and device_name of requested metric type
 			mockMt.Namespace[2].Value = mockDockerID
@@ -431,7 +433,7 @@ func TestCollectMetrics(t *testing.T) {
 					AddStaticElements("spec", "labels").
 					AddDynamicElement("label_key", "a key of container's label").
 					AddStaticElement("value"),
-				Config: plugin.Config{"endpoint": "unix:///var/run/docker.sock"},
+				Config: metricConf,
 			}
 			// specify docker_id and device_name of requested metric type
 			mockMt.Namespace[2].Value = mockDockerID
