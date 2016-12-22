@@ -83,12 +83,15 @@ var definedDynamicElements = map[string]dynamicElement{
 	"percpu_usage": dynamicElement{"cpu_id", "an id of cpu"},
 }
 
-func (d *docker) init_client(endpoint string) error {
-	dc, err := client.NewDockerClient(endpoint)
-	if err != nil {
-		return err
+func (d *docker) initClient(endpoint string) error {
+	if d.client == nil {
+		dc, err := client.NewDockerClient(endpoint)
+		if err != nil {
+			return err
+		}
+		d.client = dc
+		return nil
 	}
-	d.client = dc
 	return nil
 }
 
@@ -111,7 +114,7 @@ func (d *docker) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error) {
 		return nil, err
 	}
 
-	err = d.init_client(conf["endpoint"])
+	err = d.initClient(conf["endpoint"])
 	if err != nil {
 		return nil, err
 	}
@@ -554,10 +557,10 @@ func getDockerConfig(metric plugin.Metric) (map[string]string, error) {
 	return config, nil
 }
 
-func getStringFromConfig(metric plugin.Metric, value string) (string, error) {
-	conf, err := metric.Config.GetString(value)
+func getStringFromConfig(metric plugin.Metric, key string) (string, error) {
+	value, err := metric.Config.GetString(key)
 	if err != nil {
 		return "", err
 	}
-	return conf, nil
+	return value, nil
 }
