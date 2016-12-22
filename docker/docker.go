@@ -31,9 +31,7 @@ import (
 
 	"github.com/intelsdi-x/snap-plugin-collector-docker/client"
 	"github.com/intelsdi-x/snap-plugin-collector-docker/wrapper"
-	"github.com/intelsdi-x/snap/control/plugin"
-	"github.com/intelsdi-x/snap/control/plugin/cpolicy"
-	"github.com/intelsdi-x/snap/core"
+	"github.com/intelsdi-x/snap-plugin-lib-go/v1/plugin"
 
 	dock "github.com/fsouza/go-dockerclient"
 	utils "github.com/intelsdi-x/snap-plugin-utilities/ns"
@@ -100,9 +98,9 @@ func New() (*docker, error) {
 }
 
 // CollectMetrics retrieves values of requested metrics
-func (d *docker) CollectMetrics(mts []plugin.MetricType) ([]plugin.MetricType, error) {
+func (d *docker) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error) {
 	var err error
-	metrics := []plugin.MetricType{}
+	metrics := []plugin.Metric{}
 	d.list = map[string]dock.APIContainers{}
 
 	// get list of possible network metrics
@@ -157,17 +155,17 @@ func (d *docker) CollectMetrics(mts []plugin.MetricType) ([]plugin.MetricType, e
 		}
 
 		for _, id := range ids {
-			ns := make([]core.NamespaceElement, len(mt.Namespace()))
-			copy(ns, mt.Namespace())
+			ns := make([]plugin.NamespaceElement, len(mt.Namespace))
+			copy(ns, mt.Namespace)
 			ns[2].Value = id
 
 			// omit "spec" metrics for root
-			if id == "root" && mt.Namespace()[lengthOfNsPrefix].Value == "spec" {
+			if id == "root" && mt.Namespace[lengthOfNsPrefix].Value == "spec" {
 				continue
 			}
-			isDynamic, indexes := mt.Namespace()[lengthOfNsPrefix:].IsDynamic()
+			isDynamic, indexes := mt.Namespace[lengthOfNsPrefix:].IsDynamic()
 
-			metricName := mt.Namespace().Strings()[lengthOfNsPrefix:]
+			metricName := mt.Namespace.Strings()[lengthOfNsPrefix:]
 
 			// remove added static element (`value`)
 			if metricName[len(metricName)-1] == "value" {
@@ -175,13 +173,14 @@ func (d *docker) CollectMetrics(mts []plugin.MetricType) ([]plugin.MetricType, e
 			}
 
 			if !isDynamic {
-				metric := plugin.MetricType{
-					Timestamp_: time.Now(),
-					Namespace_: ns,
-					Data_:      utils.GetValueByNamespace(d.containers[id], metricName),
-					Tags_:      mt.Tags(),
-					Config_:    mt.Config(),
-					Version_:   VERSION,
+
+				metric := plugin.Metric{
+					Timestamp: time.Now(),
+					Namespace: ns,
+					Data:      utils.GetValueByNamespace(d.containers[id], metricName),
+					Tags:      mt.Tags,
+					Config:    mt.Config,
+					Version:   VERSION,
 				}
 
 				metrics = append(metrics, metric)
@@ -211,26 +210,27 @@ func (d *docker) CollectMetrics(mts []plugin.MetricType) ([]plugin.MetricType, e
 				} else {
 					// device name is requested explicitly
 					device := metricName[0]
-					if _, ok := d.containers[id].Stats.Filesystem[device]; !ok {
-						return nil, fmt.Errorf("In metric %s the given device name is invalid (no stats for this device)", mt.Namespace().String())
+					fs_device := d.containers[id].Stats.Filesystem[device]
+					if fs_device.Device == "" {
+						return nil, fmt.Errorf("In metric %s the given device name is invalid (no stats for this device)", mt.Namespace.Strings())
 					}
 
 					devices = append(devices, metricName[0])
 				}
 
 				for _, device := range devices {
-					rns := make([]core.NamespaceElement, len(ns))
+					rns := make([]plugin.NamespaceElement, len(ns))
 					copy(rns, ns)
 
 					rns[indexOfDynamicElement+lengthOfNsPrefix].Value = device
 
-					metric := plugin.MetricType{
-						Timestamp_: time.Now(),
-						Namespace_: rns,
-						Data_:      utils.GetValueByNamespace(d.containers[id].Stats.Filesystem[device], metricName[1:]),
-						Tags_:      mt.Tags(),
-						Config_:    mt.Config(),
-						Version_:   VERSION,
+					metric := plugin.Metric{
+						Timestamp: time.Now(),
+						Namespace: rns,
+						Data:      utils.GetValueByNamespace(d.containers[id].Stats.Filesystem[device], metricName[1:]),
+						Tags:      mt.Tags,
+						Config:    mt.Config,
+						Version:   VERSION,
 					}
 					metrics = append(metrics, metric)
 				}
@@ -245,24 +245,25 @@ func (d *docker) CollectMetrics(mts []plugin.MetricType) ([]plugin.MetricType, e
 					}
 				} else {
 					labelKey := metricName[0]
-					if _, ok := d.containers[id].Info.Labels[labelKey]; !ok {
-						return nil, fmt.Errorf("In metric %s the given label is invalid (no value for this label key)", mt.Namespace().String())
+					c_label := d.containers[id].Info.Labels[labelKey]
+					if c_label == "" {
+						return nil, fmt.Errorf("In metric %s the given label is invalid (no value for this label key)", mt.Namespace.Strings())
 					}
 
 					labelKeys = append(labelKeys, metricName[0])
 				}
 
 				for _, labelKey := range labelKeys {
-					rns := make([]core.NamespaceElement, len(ns))
+					rns := make([]plugin.NamespaceElement, len(ns))
 					copy(rns, ns)
 					rns[indexOfDynamicElement+lengthOfNsPrefix].Value = utils.ReplaceNotAllowedCharsInNamespacePart(labelKey)
-					metric := plugin.MetricType{
-						Timestamp_: time.Now(),
-						Namespace_: rns,
-						Data_:      d.containers[id].Info.Labels[labelKey],
-						Tags_:      mt.Tags(),
-						Config_:    mt.Config(),
-						Version_:   VERSION,
+					metric := plugin.Metric{
+						Timestamp: time.Now(),
+						Namespace: rns,
+						Data:      d.containers[id].Info.Labels[labelKey],
+						Tags:      mt.Tags,
+						Config:    mt.Config,
+						Version:   VERSION,
 					}
 
 					metrics = append(metrics, metric)
@@ -284,22 +285,22 @@ func (d *docker) CollectMetrics(mts []plugin.MetricType) ([]plugin.MetricType, e
 				} else {
 					netInterface := metricName[0]
 					if _, ok := ifaceMap[netInterface]; !ok {
-						return nil, fmt.Errorf("In metric %s the given network interface is invalid (no stats for this net interface)", mt.Namespace().String())
+						return nil, fmt.Errorf("In metric %s the given network interface is invalid (no stats for this net interface)", mt.Namespace.Strings())
 					}
 					netInterfaces = append(netInterfaces, metricName[0])
 				}
 
 				for _, ifaceName := range netInterfaces {
-					rns := make([]core.NamespaceElement, len(ns))
+					rns := make([]plugin.NamespaceElement, len(ns))
 					copy(rns, ns)
 					rns[indexOfDynamicElement+lengthOfNsPrefix].Value = ifaceName
-					metric := plugin.MetricType{
-						Timestamp_: time.Now(),
-						Namespace_: rns,
-						Data_:      utils.GetValueByNamespace(ifaceMap[ifaceName], metricName[1:]),
-						Tags_:      mt.Tags(),
-						Config_:    mt.Config(),
-						Version_:   VERSION,
+					metric := plugin.Metric{
+						Timestamp: time.Now(),
+						Namespace: rns,
+						Data:      utils.GetValueByNamespace(ifaceMap[ifaceName], metricName[1:]),
+						Tags:      mt.Tags,
+						Config:    mt.Config,
+						Version:   VERSION,
 					}
 					metrics = append(metrics, metric)
 				}
@@ -309,37 +310,37 @@ func (d *docker) CollectMetrics(mts []plugin.MetricType) ([]plugin.MetricType, e
 				if metricName[0] == "*" {
 					// when cpu ID is requested as an asterisk - take all available
 					for cpuID, val := range d.containers[id].Stats.CgroupStats.CpuStats.CpuUsage.PercpuUsage {
-						rns := make([]core.NamespaceElement, len(ns))
+						rns := make([]plugin.NamespaceElement, len(ns))
 						copy(rns, ns)
 
 						rns[indexOfDynamicElement+lengthOfNsPrefix].Value = strconv.Itoa(cpuID)
 
-						metric := plugin.MetricType{
-							Timestamp_: time.Now(),
-							Namespace_: rns,
-							Data_:      val,
-							Tags_:      mt.Tags(),
-							Config_:    mt.Config(),
-							Version_:   VERSION,
+						metric := plugin.Metric{
+							Timestamp: time.Now(),
+							Namespace: rns,
+							Data:      val,
+							Tags:      mt.Tags,
+							Config:    mt.Config,
+							Version:   VERSION,
 						}
 						metrics = append(metrics, metric)
 					}
 				} else {
 					cpuID, err := strconv.Atoi(metricName[0])
 					if err != nil {
-						return nil, fmt.Errorf("In metric %s the given cpu id is invalid, err=%v", mt.Namespace().String(), err)
+						return nil, fmt.Errorf("In metric %s the given cpu id is invalid, err=%v", mt.Namespace.Strings(), err)
 					}
 					if cpuID > numOfCPUs || cpuID < 0 {
-						return nil, fmt.Errorf("In metric %s the given cpu id is invalid, expected value in range 0-%d", mt.Namespace().String(), numOfCPUs)
+						return nil, fmt.Errorf("In metric %s the given cpu id is invalid, expected value in range 0-%d", mt.Namespace.Strings(), numOfCPUs)
 					}
 
-					metric := plugin.MetricType{
-						Timestamp_: time.Now(),
-						Namespace_: ns,
-						Data_:      d.containers[id].Stats.CgroupStats.CpuStats.CpuUsage.PercpuUsage[cpuID],
-						Tags_:      mt.Tags(),
-						Config_:    mt.Config(),
-						Version_:   VERSION,
+					metric := plugin.Metric{
+						Timestamp: time.Now(),
+						Namespace: ns,
+						Data:      d.containers[id].Stats.CgroupStats.CpuStats.CpuUsage.PercpuUsage[cpuID],
+						Tags:      mt.Tags,
+						Config:    mt.Config,
+						Version:   VERSION,
 					}
 					metrics = append(metrics, metric)
 				}
@@ -355,14 +356,9 @@ func (d *docker) CollectMetrics(mts []plugin.MetricType) ([]plugin.MetricType, e
 	return metrics, nil
 }
 
-// GetConfigPolicy returns plugin config policy
-func (d *docker) GetConfigPolicy() (*cpolicy.ConfigPolicy, error) {
-	return cpolicy.New(), nil
-}
-
 // GetMetricTypes returns list of available metrics
-func (d *docker) GetMetricTypes(_ plugin.ConfigType) ([]plugin.MetricType, error) {
-	var metricTypes []plugin.MetricType
+func (d *docker) GetMetricTypes(_ plugin.Config) ([]plugin.Metric, error) {
+	var metricTypes []plugin.Metric
 	var err error
 
 	// initialize containerData struct
@@ -377,7 +373,7 @@ func (d *docker) GetMetricTypes(_ plugin.ConfigType) ([]plugin.MetricType, error
 
 	for _, metricName := range dockerMetrics {
 
-		ns := core.NewNamespace(NS_VENDOR, NS_PLUGIN).
+		ns := plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
 			AddDynamicElement("docker_id", "an id of docker container")
 
 		if ns, err = nscreator.createMetricNamespace(ns, metricName); err != nil {
@@ -385,9 +381,9 @@ func (d *docker) GetMetricTypes(_ plugin.ConfigType) ([]plugin.MetricType, error
 			// fmt.Fprintf(os.Stderr, "Error in creating metric namespace: %v\n", err)
 			continue
 		}
-		metricType := plugin.MetricType{
-			Namespace_: ns,
-			Version_:   VERSION,
+		metricType := plugin.Metric{
+			Namespace: ns,
+			Version:   VERSION,
 		}
 		metricTypes = append(metricTypes, metricType)
 	}
@@ -397,7 +393,7 @@ func (d *docker) GetMetricTypes(_ plugin.ConfigType) ([]plugin.MetricType, error
 
 // createMetricNamespace returns metric namespace based on given `ns` which is used as a prefix; all dynamic elements
 // in the `metricName` are defined based on content of map `dynamicElements`
-func (creator *nsCreator) createMetricNamespace(ns core.Namespace, metricName string) (core.Namespace, error) {
+func (creator *nsCreator) createMetricNamespace(ns plugin.Namespace, metricName string) (plugin.Namespace, error) {
 	metricName = strings.TrimSpace(metricName)
 
 	if len(metricName) == 0 {
@@ -462,15 +458,15 @@ func appendIfMissing(items []string, newItem string) []string {
 }
 
 // getRequestedIDs returns requested docker ids
-func (d *docker) getRequestedIDs(mt ...plugin.MetricType) ([]string, error) {
+func (d *docker) getRequestedIDs(mt ...plugin.Metric) ([]string, error) {
 	rids := []string{}
 	for _, m := range mt {
-		ns := m.Namespace().Strings()
+		ns := m.Namespace.Strings()
 		if ok := validateMetricNamespace(ns); !ok {
-			return nil, fmt.Errorf("Invalid name of metric %+s", m.Namespace().String())
+			return nil, fmt.Errorf("Invalid name of metric %+s", ns)
 		}
 
-		rid := m.Namespace().Strings()[2]
+		rid := m.Namespace.Strings()[2]
 		if rid == "*" {
 			// all available dockers are requested
 			rids := d.availableContainers()
@@ -515,4 +511,38 @@ func validateMetricNamespace(ns []string) bool {
 		return false
 	}
 	return true
+}
+
+// GetConfigPolicy returns plugin config policy
+func (d *docker) GetConfigPolicy() (plugin.ConfigPolicy, error) {
+	policy := plugin.NewConfigPolicy()
+	configKey := []string{"intel", "docker"}
+
+	policy.AddNewStringRule(configKey,
+		"endpoint",
+		false,
+		plugin.SetDefaultString("unix:///var/run/docker.sock"))
+
+	return *policy, nil
+}
+
+func getDockerConfig(metric plugin.Metric) (map[string]string, error) {
+	config := make(map[string]string)
+	values := []string{"endpoint"}
+	var err error
+	for _, v := range values {
+		config[v], err = getStringFromConfig(metric, v)
+		if err != nil {
+			return config, err
+		}
+	}
+	return config, nil
+}
+
+func getStringFromConfig(metric plugin.Metric, value string) (string, error) {
+	conf, err := metric.Config.GetString(value)
+	if err != nil {
+		return "", err
+	}
+	return conf, nil
 }

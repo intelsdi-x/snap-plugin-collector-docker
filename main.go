@@ -22,10 +22,8 @@ limitations under the License.
 package main
 
 import (
-	"os"
-
 	"github.com/intelsdi-x/snap-plugin-collector-docker/docker"
-	"github.com/intelsdi-x/snap/control/plugin"
+	"github.com/intelsdi-x/snap-plugin-lib-go/v1/plugin"
 )
 
 func main() {
@@ -35,16 +33,5 @@ func main() {
 		panic(err)
 	}
 
-	plugin.Start(
-		plugin.NewPluginMeta(
-			docker.NS_PLUGIN,
-			docker.VERSION,
-			plugin.CollectorPluginType,
-			[]string{},
-			[]string{plugin.SnapGOBContentType},
-			plugin.ConcurrencyCount(1)),
-		dockerPlg,
-		os.Args[1],
-	)
-
+	plugin.StartCollector(dockerPlg, docker.NS_PLUGIN, docker.VERSION)
 }
