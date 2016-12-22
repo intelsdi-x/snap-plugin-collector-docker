@@ -1,5 +1,5 @@
-hash: c588241f3eb138b88e4b17b7221ad00c3ea801cae42d2240752a5b0ec493e244
-updated: 2016-12-22T11:44:25.425795245+02:00
+hash: 531ab626260fbbb3c0bf96c0463be455cd7e4a0807ea7734994232b0f47261f9
+updated: 2016-12-22T15:26:20.016779895+02:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
@@ -33,26 +33,9 @@ imports:
   version: 888eb0692c857ec880338addf316bd662d5e630e
   subpackages:
   - proto
-- name: github.com/intelsdi-x/snap
-  version: 5c1177efc47eccc10dc459e3be44083372ea08c3
-  subpackages:
-  - control/plugin
-  - control/plugin/cpolicy
-  - control/plugin/encoding
-  - control/plugin/encrypter
-  - core
-  - core/cdata
-  - core/ctypes
-  - core/serror
-  - pkg/ctree
-  - pkg/schedule
-  - scheduler/wmap
 - name: github.com/intelsdi-x/snap-plugin-lib-go
   version: 4b5999a62ffb7604f173c1ab3c2205ba8b559624
   subpackages:
-  - control/plugin
-  - control/plugin/cpolicy
-  - core
   - v1/plugin
   - v1/plugin/rpc
 - name: github.com/intelsdi-x/snap-plugin-utilities
@@ -78,10 +61,8 @@ imports:
   version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
   subpackages:
   - difflib
-- name: github.com/robfig/cron
-  version: 32d9c273155a0506d27cf73dd1246e86a470997e
 - name: github.com/Sirupsen/logrus
-  version: be52937128b38f1d99787bb476c789e2af1147f1
+  version: 26709e2714106fb8ad40b773b711ebce25b78914
 - name: github.com/stretchr/objx
   version: cbeaeb16a013161a98496fad62933b1d21786672
 - name: github.com/stretchr/testify
@@ -90,7 +71,7 @@ imports:
   - assert
   - mock
 - name: golang.org/x/net
-  version: 04557861f124410b768b1ba5bb3a91b705afbfc6
+  version: 154d9f9ea81208afed560f4cf27b4860c8ed1904
   subpackages:
   - context
   - http2
@@ -113,8 +94,6 @@ imports:
   - naming
   - peer
   - transport
-- name: gopkg.in/yaml.v2
-  version: c1cd2254a6dd314c9d73c338c12688c9325d85c6
 testImports:
 - name: github.com/gopherjs/gopherjs
   version: 4b53e1bddba0e2f734514aeb6c02db652f4c6fe8
