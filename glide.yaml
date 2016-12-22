@@ -14,6 +14,9 @@ import:
   - control/plugin
   - control/plugin/cpolicy
   - core
+- package: github.com/intelsdi-x/snap-plugin-lib-go
+  subpackages:
+  - v1/plugin
 - package: github.com/mistifyio/go-zfs
   version: ^2.1.1
 - package: github.com/opencontainers/runc

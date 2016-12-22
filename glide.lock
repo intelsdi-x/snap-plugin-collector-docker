@@ -1,5 +1,5 @@
-hash: 578bb3c6da82ed5d11bbe6af760040740f2404a4eb8ae38e5005ca5fb179ca48
-updated: 2016-12-21T14:52:44.71659103-08:00
+hash: b16b60656affc20f24e8a5d8d781f40dd1aa23d6befead85827efb01cfc78d56
+updated: 2016-12-22T11:22:53.702634832+02:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
@@ -44,6 +44,10 @@ imports:
   - pkg/schedule
   - pkg/stringutils
   - scheduler/wmap
+- name: github.com/intelsdi-x/snap-plugin-lib-go
+  version: 4b5999a62ffb7604f173c1ab3c2205ba8b559624
+  subpackages:
+  - v1/plugin
 - name: github.com/intelsdi-x/snap-plugin-utilities
   version: 0b327aae781a2e94b414be121d5ac4668750156c
   subpackages:
