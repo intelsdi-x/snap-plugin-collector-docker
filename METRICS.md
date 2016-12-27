@@ -51,14 +51,21 @@ The prefix of metric's namespace is `/intel/docker/<docker_id_or_root>/stats/cgr
 Namespace | Data Type | Description
 ----------|-----------|-----------------------
 cpu_stats/cpu_usage/total_usage | uint64 | The total CPU time consumed
-cpu_stats/cpu_usage/usage_in_kernelmode | uint64 | CPU time consumed by tasks in system (kernel) mode
-cpu_stats/cpu_usage/usage_in_usermode | uint64 | CPU time consumed by tasks in user mode
-cpu_stats/cpu_usage/percpu_usage/\<N\> | uint64 | CPU time consumed on each N-th CPU by all tasks
-cpu_stats/throttling_data/periods | uint64 | The number of period intervals that have elapsed
-cpu_stats/throttling_data/throttled_periods | uint64 | The number of times tasks in a cgroup have been throttled
+cpu_stats/cpu_usage/kernel_mode | uint64 | CPU time consumed by tasks in system (kernel) mode
+cpu_stats/cpu_usage/user_mode | uint64 | CPU time consumed by tasks in user mode
+cpu_stats/cpu_usage/per_cpu/\<N\>/value | uint64 | CPU time consumed on each N-th CPU by all tasks
+cpu_stats/throttling_data/nr_periods | uint64 | The number of period intervals that have elapsed
+cpu_stats/throttling_data/nr_throttled | uint64 | The number of times tasks in a cgroup have been throttled
 cpu_stats/throttling_data/throttled_time | uint64 | The total time duration for which tasks in a cgroup have been throttled
+cpu_stats/cpu_shares | uint64 | The relative share of CPU time available to the tasks in a cgroup
+cpuset_stats/cpu_exclusive | uint64 | Flag (0 or 1) that specifies whether cpusets other than this one and its parents and children can share the CPUs specified for this cpuset
+cpuset_stats/memory_exclusive | uint64 | Flag (0 or 1) that specifies whether other cpusets can share the memory nodes specified for the cpuset
+cpuset_stats/memory_migrate | uint64 | Flag (0 or 1) that specifies whether a page in memory should migrate to a new node if the values in cpuset.mems change
+cpuset_stats/cpus | string | CPUs numbers that tasks in this cgroup are permitted to access
+cpuset_stats/mems | string | Memory nodes that tasks in this cgroup are permitted to access
 | |
 pids_stats/current | uint64 | The current number of PID in the cgroup
+pids_stats/limit | uint64 | The maximum number of PIDs in the cgroup
 | |
 memory_stats/cache | uint64 | Page cache including tmpfs
 memory_stats/usage/usage | uint64 | Total current memory usage by processes in the cgroup
@@ -70,51 +77,63 @@ memory_stats/swap_usage/failcnt | uint64 | The number of times the swap space li
 memory_stats/kernel_usage/usage | uint64 | The total kernel memory allocation by processes in the cgroup
 memory_stats/kernel_usage/max_usage | uint64 | The maximum kernel memory allocation by processes in the cgroup
 memory_stats/kernel_usage/failcnt | uint64 | The number of times the kernel memory allocation has reached the value set in kmem.limit_in_bytes
-memory_stats/stats/active_anon | uint64 | The number of bytes of anonymous and swap cache memory on active LRU list
-memory_stats/stats/active_file | uint64 | The number of bytes of file-backed memory on active LRU list
-memory_stats/stats/cache | uint64 | The number of bytes of page cache memory
-memory_stats/stats/dirty | uint64 | The number of bytes that are waiting to get written back to the disk
-memory_stats/stats/hierarchical_memory_limit | uint64 | The number of bytes of memory limit with regard to hierarchy under which the memory cgroup is
-memory_stats/stats/hierarchical_memsw_limit | uint64 | The number of bytes of memory+swap limit with regard to hierarchy under which memory cgroup is
-memory_stats/stats/inactive_anon | uint64 | The number of bytes of anonymous and swap cache memory on inactive LRU list
-memory_stats/stats/inactive_file | uint64 | The number of bytes of file-backed memory on inactive LRU list
-memory_stats/stats/mapped_file | uint64 | The number of bytes of mapped file (includes tmpfs/shmem)
-memory_stats/stats/pgfault | uint64 | The number of page faults which happened since the creation of the cgroup
-memory_stats/stats/pgmajfault | uint64 | The number of page major faults which happened since the creation of the cgroup
-memory_stats/stats/pgpgin | uint64 | The number of charging events to the memory cgroup
-memory_stats/stats/pgpgout | uint64 | The number of uncharging events to the memory cgroup
-memory_stats/stats/rss | uint64 | The number of bytes of anonymous and swap cache memory
-memory_stats/stats/rss_huge | uint64 | The number of bytes of anonymous transparent hugepages
-memory_stats/stats/swap | uint64 | The amount of swap currently used by the processes in this cgroup
-memory_stats/stats/unevictable | uint64 | The number of bytes of memory that cannot be reclaimed
-memory_stats/stats/working_set | uint64 | The total number of bytes of memory that is being used and not easily dropped by the kernel
-memory_stats/stats/writeback | uint64 | The number of bytes of file/anon cache that are queued for syncing to disk
-memory_stats/stats/total_active_anon | uint64 | The total number of bytes of anonymous and swap cache memory on active LRU list <sup>(1)</sup>
-memory_stats/stats/total_active_file | uint64 | The total number of bytes of file-backed memory on active LRU list <sup>(1)</sup>
-memory_stats/stats/total_cache | uint64 | The total number of bytes of page cache memory <sup>(1)</sup>
-memory_stats/stats/total_dirty | uint64 | The total number of bytes that are waiting to get written back to the disk <sup>(1)</sup>
-memory_stats/stats/total_inactive_anon | uint64 | The total number of bytes of anonymous and swap cache memory on inactive LRU list <sup>(1)</sup>
-memory_stats/stats/total_inactive_file | uint64 | The total number of bytes of file-backed memory on inactive LRU list <sup>(1)</sup>
-memory_stats/stats/total_mapped_file | uint64 | The total number of bytes of mapped file (includes tmpfs/shmem) <sup>(1)</sup>
-memory_stats/stats/total_pgfault | uint64 | The total number of page faults which happened since the creation of the cgroup <sup>(1)</sup>
-memory_stats/stats/total_pgmajfault | uint64 | The total number of page major faults which happened since the creation of the cgroup <sup>(1)</sup>
-memory_stats/stats/total_pgpgin | uint64 | The total number of charging events to the memory cgroup <sup>(1)</sup>
-memory_stats/stats/total_pgpgout | uint64 | The total number of uncharging events to the memory cgroup <sup>(1)</sup>
-memory_stats/stats/total_rss | uint64 | The total number of bytes of anonymous and swap cache memory <sup>(1)</sup>
-memory_stats/stats/total_rss_huge | uint64 | The total number of bytes of anonymous transparent hugepages <sup>(1)</sup>
-memory_stats/stats/total_swap | uint64 | The total number of bytes of swap usage <sup>(1)</sup>
-memory_stats/stats/total_unevictable | uint64 | The total number of bytes of memory that cannot be reclaimed <sup>(1)</sup>
-memory_stats/stats/total_writeback | uint64 | The total number of bytes of file/anon cache that are queued for syncing to disk <sup>(1)</sup>
-cpuset/cpu_exclusive | uint64 | contains a flag (0 or 1) that specifies whether cpusets other than this one and its parents and children can share the CPUs specified for this cpuset
-cpuset/memory_exclusive | uint64 | contains a flag (0 or 1) that specifies whether other cpusets can share the memory nodes specified for the cpuset
-cpuset/memory_migrate | uint64 | contains a flag (0 or 1) that specifies whether a page in memory should migrate to a new node if the values in cpuset.mems change
-cpuset/cpus | string | specifies the CPUs that tasks in this cgroup are permitted to access
-cpuset/mems | string | specifies the memory nodes that tasks in this cgroup are permitted to access
-shares/cpu | uint64 | contains an integer value that specifies a relative share of CPU time available to the tasks in a cgroup
+memory_stats/statistics/active_anon | uint64 | The number of bytes of anonymous and swap cache memory on active LRU list
+memory_stats/statistics/active_file | uint64 | The number of bytes of file-backed memory on active LRU list
+memory_stats/statistics/cache | uint64 | The number of bytes of page cache memory
+memory_stats/statistics/dirty | uint64 | The number of bytes that are waiting to get written back to the disk
+memory_stats/statistics/hierarchical_memory_limit | uint64 | The number of bytes of memory limit with regard to hierarchy under which the memory cgroup is
+memory_stats/statistics/hierarchical_memsw_limit | uint64 | The number of bytes of memory+swap limit with regard to hierarchy under which memory cgroup is
+memory_stats/statistics/inactive_anon | uint64 | The number of bytes of anonymous and swap cache memory on inactive LRU list
+memory_stats/statistics/inactive_file | uint64 | The number of bytes of file-backed memory on inactive LRU list
+memory_stats/statistics/mapped_file | uint64 | The number of bytes of mapped file (includes tmpfs/shmem)
+memory_stats/statistics/pgfault | uint64 | The number of page faults which happened since the creation of the cgroup
+memory_stats/statistics/pgmajfault | uint64 | The number of page major faults which happened since the creation of the cgroup
+memory_stats/statistics/pgpgin | uint64 | The number of charging events to the memory cgroup
+memory_stats/statistics/pgpgout | uint64 | The number of uncharging events to the memory cgroup
+memory_stats/statistics/rss | uint64 | The number of bytes of anonymous and swap cache memory
+memory_stats/statistics/rss_huge | uint64 | The number of bytes of anonymous transparent hugepages
+memory_stats/statistics/swap | uint64 | The amount of swap currently used by the processes in this cgroup
+memory_stats/statistics/unevictable | uint64 | The number of bytes of memory that cannot be reclaimed
+memory_stats/statistics/working_set | uint64 | The total number of bytes of memory that is being used and not easily dropped by the kernel
+memory_stats/statistics/writeback | uint64 | The number of bytes of file/anon cache that are queued for syncing to disk
+memory_stats/statistics/total_active_anon | uint64 | The total number of bytes of anonymous and swap cache memory on active LRU list <sup>(1)</sup>
+memory_stats/statistics/total_active_file | uint64 | The total number of bytes of file-backed memory on active LRU list <sup>(1)</sup>
+memory_stats/statistics/total_cache | uint64 | The total number of bytes of page cache memory <sup>(1)</sup>
+memory_stats/statistics/total_dirty | uint64 | The total number of bytes that are waiting to get written back to the disk <sup>(1)</sup>
+memory_stats/statistics/total_inactive_anon | uint64 | The total number of bytes of anonymous and swap cache memory on inactive LRU list <sup>(1)</sup>
+memory_stats/statistics/total_inactive_file | uint64 | The total number of bytes of file-backed memory on inactive LRU list <sup>(1)</sup>
+memory_stats/statistics/total_mapped_file | uint64 | The total number of bytes of mapped file (includes tmpfs/shmem) <sup>(1)</sup>
+memory_stats/statistics/total_pgfault | uint64 | The total number of page faults which happened since the creation of the cgroup <sup>(1)</sup>
+memory_stats/statistics/total_pgmajfault | uint64 | The total number of page major faults which happened since the creation of the cgroup <sup>(1)</sup>
+memory_stats/statistics/total_pgpgin | uint64 | The total number of charging events to the memory cgroup <sup>(1)</sup>
+memory_stats/statistics/total_pgpgout | uint64 | The total number of uncharging events to the memory cgroup <sup>(1)</sup>
+memory_stats/statistics/total_rss | uint64 | The total number of bytes of anonymous and swap cache memory <sup>(1)</sup>
+memory_stats/statistics/total_rss_huge | uint64 | The total number of bytes of anonymous transparent hugepages <sup>(1)</sup>
+memory_stats/statistics/total_swap | uint64 | The total number of bytes of swap usage <sup>(1)</sup>
+memory_stats/statistics/total_unevictable | uint64 | The total number of bytes of memory that cannot be reclaimed <sup>(1)</sup>
+memory_stats/statistics/total_writeback | uint64 | The total number of bytes of file/anon cache that are queued for syncing to disk <sup>(1)</sup>
+| |
+hugetlb_stats/\<size\>/failcnt | uint64 | The number of allocation failure due to HugeTLB limit
+hugetlb_stats/\<size\>/max_usage | uint64 | Max "hugepagesize" hugetlb  usage recorded
+hugetlb_stats/\<size\>/usage | uint64 | Current usage for "hugepagesize" hugetlb
+| |
+blkio_stats/io_merged_recursive/\<N\>/value | uint64 | Total number of bios/requests merged into requests belonging from all the descendant cgroups  
+blkio_stats/io_queue_recursive/\<N\>/value | uint64 | Total number of requests queued up at any given instant from all the descendant cgroups 
+blkio_stats/io_service_bytes_recursive/\<N\>/value | uint64 | Number of bytes transferred to/from the disk from all the descendant cgroups 
+blkio_stats/io_service_time_recursive/\<N\>/value | uint64 | Total amount of time between request dispatch and request completion for the IOs done from all the descendant cgroups
+blkio_stats/io_serviced_recursive/\<N\>/value | uint64 | Number of IOs (bio) issued to the disk from all the descendant cgroups
+blkio_stats/io_time_recursive/\<N\>/value | uint64 | Disk time allocated to cgroup per device in milliseconds from all the descendant cgroups
+blkio_stats/io_wait_time_recursive/\<N\>/value | uint64 | Total amount of time the IOs for this cgroup spent waiting in the scheduler queues for service from all the descendant cgroups
+blkio_stats/sectors_recursive/\<N\>/value | uint64 | Number of sectors transferred to/from disk from all descendant group
+blkio_stats/\<bklio_stat_name\>/major | uint64 | Major number of device <sup>(2)</sup>
+blkio_stats/\<bklio_stat_name\>/minor | uint64 | Minor number of device <sup>(2)</sup>
+blkio_stats/\<bklio_stat_name\>/op | string | Operation name <sup>(2)</sup>
 
 <sup>(1)</sup> Hierarchical version of cgroups counter which in addition to the cgroup's own value includes the sum of all hierarchical children's values
 
-Read more about cgroups in [Kernel documentation](https://www.kernel.org/doc/Documentation/cgroups/cgroups.txt)
+<sup>(2)</sup> Each blkio statistic additionally exposes `major`, `minor` and `op` metric    
+
+Read more about cgroups in [Kernel documentation](https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt)
 
 </br>
 
@@ -126,7 +145,6 @@ The prefix of metric's namespace is `/intel/docker/<docker_id_or_root>/stats/net
 
 Namespace | Data Type | Description
 ----------|-----------|-----------------------
-name | string | The fullname of network interface
 rx_bytes | uint64 | The number of bytes received over the network
 rx_packets | uint64 | The number of packets received over the network
 rx_dropped | uint64 | The number of bytes dropped during receiving over the network

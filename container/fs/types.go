@@ -52,10 +52,10 @@ type DiskStats struct {
 // FsInfo specifies methods to get filesystem information and statistics
 type FsInfo interface {
 	// Returns capacity and free space, in bytes, of all the ext2, ext3, ext4 filesystems on the host.
-	GetGlobalFsInfo() ([]Fs, error)
+	GetGlobalFsInfo(procfs string) ([]Fs, error)
 
 	// Returns capacity and free space, in bytes, of the set of mounts passed.
-	GetFsInfoForPath(mountSet map[string]struct{}) ([]Fs, error)
+	GetFsInfoForPath(mountSet map[string]struct{}, procfs string) ([]Fs, error)
 
 	// Returns number of bytes occupied by 'dir'.
 	GetDirUsage(dir string, timeout time.Duration) (uint64, error)

@@ -9,23 +9,61 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/intelsdi-x/snap-plugin-collector-docker/mounts"
-	"github.com/intelsdi-x/snap-plugin-collector-docker/wrapper"
+	"github.com/intelsdi-x/snap-plugin-collector-docker/container"
+
+	log "github.com/Sirupsen/logrus"
 )
 
-// TcpStatsFromProc returns TCP statistics (e.g. the number of TCP connections in state `established`, `close`, etc.)
-func TcpStatsFromProc(rootFs string, pid int) (wrapper.TcpStat, error) {
-	return tcpStatsFromProc(rootFs, pid, "net/tcp")
+type Tcp struct {
+	StatsFile string
 }
 
-// Tcp6StatsFromProc returns TCP6 statistics (e.g. the number of TCP6 connections in state `established`, `close`, etc.)
-func Tcp6StatsFromProc(rootFs string, pid int) (wrapper.TcpStat, error) {
-	return tcpStatsFromProc(rootFs, pid, "net/tcp6")
+func (tcp *Tcp) GetStats(stats *container.Statistics, opts container.GetStatOpt) error {
+	pid, err := opts.GetIntValue("pid")
+	if err != nil {
+		return err
+	}
+
+	isHost, err := opts.GetBoolValue("is_host")
+	if err != nil {
+		return err
+	}
+
+	procfs, err := opts.GetStringValue("procfs")
+	if err != nil {
+		return err
+	}
+
+	if !isHost {
+		path := filepath.Join(procfs, strconv.Itoa(pid), tcp.StatsFile)
+
+		switch tcp.StatsFile {
+		case "net/tcp":
+			stats.Connection.Tcp, err = tcpStatsFromProc(path)
+		case "net/tcp6":
+			stats.Connection.Tcp6, err = tcpStatsFromProc(path)
+		default:
+			log.WithFields(log.Fields{
+				"module": "network",
+				"block":  "GetStats",
+			}).Errorf("Unknown tcp stats file %s", tcp.StatsFile)
+			return fmt.Errorf("Unknown tcp stats file %s", tcp.StatsFile)
+		}
+
+		if err != nil {
+			// only log error message
+			log.WithFields(log.Fields{
+				"module": "network",
+				"block":  "GetStats",
+			}).Errorf("Unable to get network stats, pid %d, stats file %s: %s", pid, tcp.StatsFile, err)
+		}
+
+	}
+
+	return nil
 }
 
-func tcpStatsFromProc(rootFs string, pid int, file string) (wrapper.TcpStat, error) {
-	tcpStatsFile := filepath.Join(rootFs, mounts.ProcfsMountPoint, strconv.Itoa(pid), file)
-
+func tcpStatsFromProc(tcpStatsFile string) (container.TcpStat, error) {
 	tcpStats, err := scanTcpStats(tcpStatsFile)
 	if err != nil {
 		return tcpStats, fmt.Errorf("Cannot obtain tcp stats: %v", err)
@@ -34,8 +72,8 @@ func tcpStatsFromProc(rootFs string, pid int, file string) (wrapper.TcpStat, err
 	return tcpStats, nil
 }
 
-func scanTcpStats(tcpStatsFile string) (wrapper.TcpStat, error) {
-	var stats wrapper.TcpStat
+func scanTcpStats(tcpStatsFile string) (container.TcpStat, error) {
+	var stats container.TcpStat
 
 	data, err := ioutil.ReadFile(tcpStatsFile)
 	if err != nil {
@@ -84,7 +122,7 @@ func scanTcpStats(tcpStatsFile string) (wrapper.TcpStat, error) {
 		tcpStateMap[tcpState]++
 	}
 
-	stats = wrapper.TcpStat{
+	stats = container.TcpStat{
 		Established: tcpStateMap["01"],
 		SynSent:     tcpStateMap["02"],
 		SynRecv:     tcpStateMap["03"],

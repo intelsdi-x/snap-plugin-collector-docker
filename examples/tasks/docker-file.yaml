@@ -9,7 +9,9 @@ workflow:
       /intel/docker:
         endpoint: tcp://192.168.0.114:2375
     metrics:
-      /intel/docker/*: {}
+      /intel/docker/*/spec/*: {}
+      /intel/docker/*/stats/cgroups/cpu_stats/*: {}
+      /intel/docker/*/stats/cgroups/memory_stats/*: {}
     publish:
       -
         config:

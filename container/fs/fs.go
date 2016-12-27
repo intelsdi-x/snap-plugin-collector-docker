@@ -16,12 +16,12 @@ import (
 	"syscall"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/pkg/mount"
-	"github.com/fsouza/go-dockerclient"
-	"github.com/intelsdi-x/snap-plugin-collector-docker/config"
-	"github.com/intelsdi-x/snap-plugin-collector-docker/mounts"
-	"github.com/intelsdi-x/snap-plugin-collector-docker/wrapper"
 	zfs "github.com/mistifyio/go-zfs"
+
+	"github.com/intelsdi-x/snap-plugin-collector-docker/config"
+	"github.com/intelsdi-x/snap-plugin-collector-docker/container"
 )
 
 const (
@@ -33,7 +33,6 @@ const (
 
 	// Path to the directory where docker stores log files if the json logging driver is enabled.
 	pathToContainersDir = "containers"
-	storageDir          = "/var/lib/docker"
 
 	userLayerFirstVersionMaj = 1
 	userLayerFirstVersionMin = 10
@@ -41,6 +40,8 @@ const (
 
 	labelSystemRoot = "root"
 )
+
+var collector *DiskUsageCollector
 
 // RealFsInfo holds information about filesystem (e.g. partitions)
 type RealFsInfo struct {
@@ -52,11 +53,11 @@ type RealFsInfo struct {
 	labels map[string]string
 }
 
-var collector DiskUsageCollector
-
+// DiskUsageCollector collects container disk usage (based on `du -u` command) in the background
 type DiskUsageCollector struct {
-	Mut       *sync.Mutex
-	DiskUsage map[string]uint64
+	Mut         *sync.Mutex
+	DiskUsage   map[string]uint64
+	initialized bool
 }
 
 type partition struct {
@@ -70,6 +71,8 @@ type partition struct {
 var partitionRegex = regexp.MustCompile(`^(?:(?:s|xv)d[a-z]+\d*|dm-\d+)$`)
 
 func (c *DiskUsageCollector) Init() {
+	collector = c
+	collector.initialized = true
 	collector.DiskUsage = map[string]uint64{}
 	collector.Mut = &sync.Mutex{}
 
@@ -83,6 +86,7 @@ func (c *DiskUsageCollector) Init() {
 
 	collector.worker(false, "root", storagePaths[0])
 	collector.worker(true, "containers", storagePaths[1:]...)
+
 }
 
 func (c *DiskUsageCollector) worker(forSubDirs bool, id string, paths ...string) {
@@ -149,11 +153,11 @@ func (self *RealFsInfo) GetDirUsage(dir string, timeout time.Duration) (uint64, 
 }
 
 // GetFsInfoForPath returns capacity and free space, in bytes, of the set of mounts passed.
-func (self *RealFsInfo) GetFsInfoForPath(mountSet map[string]struct{}) ([]Fs, error) {
+func (self *RealFsInfo) GetFsInfoForPath(mountSet map[string]struct{}, procfs string) ([]Fs, error) {
 	var filesystems []Fs
 	deviceSet := make(map[string]struct{})
 
-	diskStatsMap, err := getDiskStatsMap(filepath.Join(mounts.ProcfsMountPoint, "diskstats"))
+	diskStatsMap, err := getDiskStatsMap(filepath.Join(procfs, "diskstats"))
 	if err != nil {
 		return nil, err
 	}
@@ -200,17 +204,43 @@ func (self *RealFsInfo) GetFsInfoForPath(mountSet map[string]struct{}) ([]Fs, er
 }
 
 // GetFsStats returns filesystem statistics for a given container
-func GetFsStats(container *docker.Container) (map[string]wrapper.FilesystemInterface, error) {
+func (du *DiskUsageCollector) GetStats(stats *container.Statistics, opts container.GetStatOpt) error {
 	var (
 		baseUsage           uint64
 		logUsage            uint64
-		rootFsStorageDir    = storageDir
 		logsFilesStorageDir string
 	)
 
-	fsStats := map[string]wrapper.FilesystemInterface{}
+	if collector == nil {
+		log.WithFields(log.Fields{
+			"block":    "fs",
+			"function": "GetStats",
+		}).Info("Initializing filesystem collector workers")
+		du.Init()
+	}
 
-	if container.ID != "" {
+	id, err := opts.GetStringValue("container_id")
+	if err != nil {
+		return err
+	}
+
+	drv, err := opts.GetStringValue("container_drv")
+	if err != nil {
+		return err
+	}
+
+	procfs, err := opts.GetStringValue("procfs")
+	if err != nil {
+		return err
+	}
+
+	rootDir, err := opts.GetStringValue("root_dir")
+	if err != nil {
+		return err
+	}
+	rootFsStorageDir := rootDir
+
+	if id != "root" {
 		getUserLayerID := func(storageDir, storageDriver, containerID string) (string, error) {
 			dockerVersion := config.DockerVersion
 			if dockerVersion[0] <= userLayerFirstVersionMaj && dockerVersion[1] < userLayerFirstVersionMin {
@@ -223,7 +253,6 @@ func GetFsStats(container *docker.Container) (map[string]wrapper.FilesystemInter
 				idFilePath := filepath.Join(storageDir, "image", storageDriver, "layerdb", "mounts", containerID, userLayerIDFile)
 				idBytes, err := ioutil.ReadFile(idFilePath)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "Failed to read id of user-layer for container  %v from under path  %v\n", containerID, idFilePath)
 					return "", err
 				}
 				return string(idBytes), nil
@@ -231,64 +260,70 @@ func GetFsStats(container *docker.Container) (map[string]wrapper.FilesystemInter
 				return "", fmt.Errorf("Unsupported storage driver; dont know how to determine id of user layer for container %v \n", containerID)
 			}
 		}
-		userLayerID, err := getUserLayerID(storageDir, container.Driver, container.ID)
+		userLayerID, err := getUserLayerID(rootDir, drv, id)
 		if err != nil {
-			userLayerID = container.ID
+			userLayerID = id
 		}
 
-		switch container.Driver {
+		switch drv {
 		case aufsStorageDriver:
 			// build the path to docker storage as `/var/lib/docker/aufs/diff/<docker_id>`
-			rootFsStorageDir = filepath.Join(storageDir, string(aufsStorageDriver), aufsRWLayer, userLayerID)
+			rootFsStorageDir = filepath.Join(rootDir, string(aufsStorageDriver), aufsRWLayer, userLayerID)
 		case overlayStorageDriver:
 			// build the path to docker storage as `/var/lib/docker/overlay/<docker_id>`
-			rootFsStorageDir = filepath.Join(storageDir, string(overlayStorageDriver), userLayerID)
+			rootFsStorageDir = filepath.Join(rootDir, string(overlayStorageDriver), userLayerID)
 		default:
-			return nil, fmt.Errorf("Filesystem stats for storage driver %+s have not been supported yet", container.Driver)
+			return fmt.Errorf("Filesystem stats for storage driver %+s have not been supported yet", drv)
 		}
 
 		// Path to the directory where docker stores log files, metadata and configs
 		// e.g. /var/lib/docker/container/<docker_id>
-		logsFilesStorageDir = filepath.Join(storageDir, pathToContainersDir, container.ID)
+		logsFilesStorageDir = filepath.Join(rootDir, pathToContainersDir, id)
 	}
 
-	fsInfo, err := newFsInfo(container.Driver)
+	fsInfo, err := newFsInfo(drv)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if _, err := os.Stat(rootFsStorageDir); err == nil {
 		deviceInfo, err := fsInfo.GetDirFsDevice(rootFsStorageDir)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		filesystems, err := fsInfo.GetGlobalFsInfo()
+		filesystems, err := fsInfo.GetGlobalFsInfo(procfs)
 		if err != nil {
-			return nil, fmt.Errorf("Cannot get global filesystem info, err=%v", err)
+			return fmt.Errorf("Cannot get global filesystem info, err=%v", err)
 		}
 
 		baseUsage, err = fsInfo.GetDirUsage(rootFsStorageDir, time.Second)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Cannot get usage for dir=`%s`, err=%s", rootFsStorageDir, err)
+			log.WithFields(log.Fields{
+				"block":    "filesystem",
+				"function": "GetStats",
+			}).Errorf("Cannot get usage for dir=`%s`, err=%s", rootFsStorageDir, err)
 		}
 
 		if _, err := os.Stat(logsFilesStorageDir); err == nil {
 			logUsage, err = fsInfo.GetDirUsage(logsFilesStorageDir, time.Second)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Cannot get usage for dir=`%s`, err=%s", logsFilesStorageDir, err)
+				log.WithFields(log.Fields{
+					"block":    "filesystem",
+					"function": "GetStats",
+				}).Errorf("Cannot get usage for dir=`%s`, err=%s", logsFilesStorageDir, err)
 			}
 
 			baseUsage += logUsage
 		}
 
 		for _, fs := range filesystems {
-			if container.ID == "" {
+			if id == "" {
 				deviceInfo.Device = fs.Device
 			}
 
 			if fs.Device == deviceInfo.Device {
-				stats := wrapper.FilesystemInterface{
+				fsStats := container.FilesystemInterface{
 					Device:          fs.Device,
 					Type:            fs.Type.String(),
 					Available:       fs.Available,
@@ -309,23 +344,29 @@ func GetFsStats(container *docker.Container) (map[string]wrapper.FilesystemInter
 					WeightedIoTime:  fs.DiskStats.WeightedIoTime,
 				}
 				if devName := getDeviceName(fs.Device); len(devName) > 0 {
-					fsStats[devName] = stats
+					stats.Filesystem[devName] = fsStats
 				} else {
-					fmt.Fprintf(os.Stderr, "Unknown device name")
-					fsStats["unknown"] = stats
+					log.WithFields(log.Fields{
+						"block":    "filesystem",
+						"function": "GetStats",
+					}).Errorf("Unknown device name")
+					stats.Filesystem["unknown"] = fsStats
 				}
 			}
 		}
 	} else {
-		fmt.Fprintf(os.Stderr, "Os.Stat failed: %v; no fs stats will be available for container %v", err, container.ID)
+		log.WithFields(log.Fields{
+			"block":    "filesystem",
+			"function": "GetStats",
+		}).Errorf("Os.Stat failed: %v; no fs stats will be available for container %v", err, id)
 	}
 
-	return fsStats, nil
+	return nil
 }
 
 //GetGlobalFsInfo returns capacity and free space, in bytes, of all the ext2, ext3, ext4 filesystems on the host.
-func (self *RealFsInfo) GetGlobalFsInfo() ([]Fs, error) {
-	return self.GetFsInfoForPath(nil)
+func (self *RealFsInfo) GetGlobalFsInfo(procfs string) ([]Fs, error) {
+	return self.GetFsInfoForPath(nil, procfs)
 }
 
 // addSystemRootLabel attempts to determine which device contains the mount for /.
@@ -450,7 +491,7 @@ func getDiskStatsMap(diskStatsFile string) (map[string]DiskStats, error) {
 		offset := 3
 		var stats = make([]uint64, wordLength-offset)
 		if len(stats) < 11 {
-			return nil, fmt.Errorf("could not parse all 11 columns of %s", filepath.Join(mounts.ProcfsMountPoint, "diskstats"))
+			return nil, fmt.Errorf("could not parse all 11 columns of %s", diskStatsFile)
 		}
 		var error error
 		for i := offset; i < wordLength; i++ {

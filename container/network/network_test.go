@@ -1,4 +1,3 @@
-//
 // +build small
 
 /*
@@ -26,10 +25,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
-	"github.com/intelsdi-x/snap-plugin-collector-docker/wrapper"
 	. "github.com/smartystreets/goconvey/convey"
+
+	"github.com/intelsdi-x/snap-plugin-collector-docker/container"
 )
 
 const (
@@ -118,7 +119,7 @@ func TestTotalNetworkStats(t *testing.T) {
 	Convey("Append `total` to network stats as statistics in total", t, func() {
 
 		Convey("when there is no network interface", func() {
-			ifaceStatsInTotal := totalNetworkStats([]wrapper.NetworkInterface{})
+			ifaceStatsInTotal := totalNetworkStats([]container.NetworkInterface{})
 
 			Convey("total stats should be appended", func() {
 				So(ifaceStatsInTotal, ShouldNotBeNil)
@@ -142,8 +143,8 @@ func TestTotalNetworkStats(t *testing.T) {
 
 		Convey("calulate total stats based on network interface stats", func() {
 			// mock network stats per interface
-			mockIfaceStats := []wrapper.NetworkInterface{
-				wrapper.NetworkInterface{
+			mockIfaceStats := []container.NetworkInterface{
+				container.NetworkInterface{
 					Name:      "mockNetInterface1",
 					RxBytes:   1,
 					RxPackets: 1,
@@ -155,7 +156,7 @@ func TestTotalNetworkStats(t *testing.T) {
 					TxDropped: 1,
 				},
 
-				wrapper.NetworkInterface{
+				container.NetworkInterface{
 					Name:      "mockNetInterface2",
 					RxBytes:   1,
 					RxPackets: 1,
@@ -296,7 +297,8 @@ func TestNetworkStatsFromProc(t *testing.T) {
 
 		Convey("successful retrieving statistics for available devices", func() {
 			for _, pid := range mockPids {
-				stats, err := NetworkStatsFromProc(mockProcfsDir, pid)
+				path := filepath.Join(mockProcfsDir, strconv.Itoa(pid))
+				stats, err := NetworkStatsFromProc(path)
 				So(err, ShouldBeNil)
 				So(stats, ShouldNotBeEmpty)
 				// stats should be returned: for `eth0` and `total`; `lo` should be ignored
@@ -306,7 +308,8 @@ func TestNetworkStatsFromProc(t *testing.T) {
 		})
 
 		Convey("return an error when the given PID does not exist", func() {
-			stats, err := NetworkStatsFromProc(mockProcfsDir, 0)
+			path := filepath.Join(mockProcfsDir, strconv.Itoa(0))
+			stats, err := NetworkStatsFromProc(path)
 			So(err, ShouldNotBeNil)
 			So(stats, ShouldBeEmpty)
 		})
@@ -317,7 +320,8 @@ func TestNetworkStatsFromProc(t *testing.T) {
 				err := createMockProcfsNetDev([]int{mockPid}, mockDevContentLoopback)
 				So(err, ShouldBeNil)
 			})
-			stats, err := NetworkStatsFromProc(mockProcfsDir, mockPid)
+			path := filepath.Join(mockProcfsDir, strconv.Itoa(mockPid))
+			stats, err := NetworkStatsFromProc(path)
 			So(err, ShouldNotBeNil)
 			So(stats, ShouldBeEmpty)
 			So(err.Error(), ShouldEqual, "No network interface found")
@@ -350,7 +354,7 @@ func createMockDeviceStatistics(devices []string, content []byte) error {
 func createMockProcfsNetDev(pids []int, content []byte) error {
 	deleteMockFiles()
 	for _, pid := range pids {
-		pathToProcessNetDev := filepath.Join(mockProcfsDir, "proc", fmt.Sprintf("%d", pid), "net")
+		pathToProcessNetDev := filepath.Join(mockProcfsDir, fmt.Sprintf("%d", pid), "net")
 		if err := os.MkdirAll(pathToProcessNetDev, os.ModePerm); err != nil {
 			return err
 		}
@@ -387,7 +391,7 @@ func createMockDeviceEntries(devices []string) error {
 func createMockProcfsNetTCP(pids []int, content []byte) error {
 	deleteMockFiles()
 	for _, pid := range pids {
-		pathToProcessNetDev := filepath.Join(mockProcfsDir, "proc", fmt.Sprintf("%d", pid), "net")
+		pathToProcessNetDev := filepath.Join(mockProcfsDir, fmt.Sprintf("%d", pid), "net")
 		if err := os.MkdirAll(pathToProcessNetDev, os.ModePerm); err != nil {
 			return err
 		}
