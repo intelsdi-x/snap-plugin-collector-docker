@@ -51,6 +51,18 @@ This builds the plugin in `./build/`
 #### Configuration parameters
 * Set environment variable `PROCFS_MOUNT` to point to the path where proc of host is mounted.
 
+In order to setup Docker Remote API endpoint in **workflow** section of a task configuration file it is necessary to include following:
+
+    workflow: 
+      collect: 
+        config: 
+          /intel/docker: 
+            endpoint: "<DOCKER_REMOTE_API_ENDPOINT>"
+
+where *DOCKER_REMOTE_API_ENDPOINT* is an endpoint that is being used to communicate with Docker daemon via Docker Remote API.
+For more information see [Docker Remote API reference](https://docs.docker.com/engine/reference/api/docker_remote_api/)
+
+
 ## Documentation
 There are a number of other resources you can review to learn to use this plugin:
 * [Docker documentation](https://docs.docker.com/)
@@ -150,8 +162,8 @@ NAMESPACE                                                                    DAT
 These data are published to file and stored there (in this example in `/tmp/snap-docker-file.log`).
 
 ### Roadmap
-This plugin is in active development. As we lauch this plugin, we have a few item in mind for the next release:
-- [ ] Support for custom docker endpoints different that default `unix:///var/run/docker.sock`
+This plugin is in active development.
+
 As we launch this plugin, we do not have any outstanding requirements for the next release. If you have a feature request, please add it as an [issue](https://github.com/intelsdi-x/snap-plugin-collector-docker/issues/new) and/or submit a [pull request](https://github.com/intelsdi-x/snap-plugin-collector-docker/pulls).
 
 ## Community Support
