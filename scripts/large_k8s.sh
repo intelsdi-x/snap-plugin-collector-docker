@@ -33,7 +33,7 @@ _debug "__dir ${__dir}"
 _debug "__proj_dir ${__proj_dir}"
 _debug "__proj_name ${__proj_name}"
 
-_debug "start k8 deployement $__deployment_file"
+_debug "start k8 deployment $__deployment_file"
 kubectl create -f $__deployment_file
 while ! [ "$(kubectl get po --no-headers | grep $__deployment_name | grep Running | awk '{print $2}')" = "1/1" ]; do
     kubectl get po --no-headers | grep $__deployment_name | grep CrashLoopBackOff && echo 'container failed' && exit 1
