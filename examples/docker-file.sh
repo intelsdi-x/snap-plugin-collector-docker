@@ -8,7 +8,7 @@ set -o pipefail
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # source the common bash script 
-. "${__dir}/../../scripts/common.sh"
+. "${__dir}/../scripts/common.sh"
 
 # ensure PLUGIN_PATH is set
 TMPDIR=${TMPDIR:-"/tmp"}
@@ -34,7 +34,7 @@ SNAP_FLAG=0
                     snaptel plugin load "${PLUGIN_PATH}/snap-plugin-collector-docker"
                     
                     _info "creating and starting a task"
-                    snaptel task create -t "${__dir}/docker-file.json"
+                    snaptel task create -t "${__dir}/tasks/docker-task.json"
 
                     SNAP_FLAG=1
 
