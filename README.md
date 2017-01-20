@@ -13,12 +13,13 @@ It's used in the [Snap framework](http://github.com/intelsdi-x/snap).
   * [Examples](#examples)
 3. [Community Support](#community-support)
 4. [Contributing](#contributing)
-5. [License](#license-and-authors)
+5. [License](#license)
 6. [Acknowledgements](#acknowledgements)
 
 ## Getting Started
 
 In order to use this plugin you need Docker Engine installed. Visit [Install Docker Engine](https://docs.docker.com/engine/installation/) for detailed instructions how to do it.
+Plugin was tested against Docker version 1.12.3.
 
 ### Operating systems
 * Linux/amd64
@@ -49,19 +50,21 @@ This builds the plugin in `./build/`
 * Load the plugin and create a task, see example in [Examples](#examples).
 
 #### Configuration parameters
-* Set environment variable `PROCFS_MOUNT` to point to the path where proc of host is mounted.
+It's possible to provide configuration to plugin via task manifest.
 
-In order to setup Docker Remote API endpoint in **workflow** section of a task configuration file it is necessary to include following:
+In order to setup Docker Remote API endpoint and procfs path in **workflow** section of a task configuration file it is necessary to include following:
 
     workflow: 
       collect: 
         config: 
           /intel/docker: 
             endpoint: "<DOCKER_REMOTE_API_ENDPOINT>"
+            procfs: "<PATH_TO_PROCFS>"
 
-where *DOCKER_REMOTE_API_ENDPOINT* is an endpoint that is being used to communicate with Docker daemon via Docker Remote API.
+where *DOCKER_REMOTE_API_ENDPOINT* is an endpoint that is being used to communicate with Docker daemon via Docker Remote API,
+where *PATH_TO_PROCFS* is a path to proc filesystem on host.
+
 For more information see [Docker Remote API reference](https://docs.docker.com/engine/reference/api/docker_remote_api/)
-
 
 ## Documentation
 There are a number of other resources you can review to learn to use this plugin:
@@ -148,28 +151,28 @@ $ snaptel task watch 02dd7ff4-8106-47e9-8b86-70067cd0a850
 Watching Task (02dd7ff4-8106-47e9-8b86-70067cd0a850):
 NAMESPACE                                                                    DATA      		TIMESTAMP
 /intel/docker/7720efd76bb8/cgroups/cpu_stats/cpu_usage/total_usage           2.146646e+07       2016-06-21 12:44:09.551811277 +0200 CEST
-/intel/docker/7720efd76bb8/cgroups/cpu_stats/cpu_usage/usage_in_kernelmode   1e+07              2016-06-21 12:44:09.552107446 +0200 CEST
-/intel/docker/7720efd76bb8/cgroups/cpu_stats/cpu_usage/usage_in_usermode     0                  2016-06-21 12:44:09.552146203 +0200 CEST
+/intel/docker/7720efd76bb8/cgroups/cpu_stats/cpu_usage/kernel_mode           1e+07              2016-06-21 12:44:09.552107446 +0200 CEST
+/intel/docker/7720efd76bb8/cgroups/cpu_stats/cpu_usage/user_mode             0                  2016-06-21 12:44:09.552146203 +0200 CEST
 /intel/docker/ad5221e8ae73/cgroups/cpu_stats/cpu_usage/total_usage           2.146646e+07       2016-06-21 12:44:09.551811277 +0200 CEST
-/intel/docker/ad5221e8ae73/cgroups/cpu_stats/cpu_usage/usage_in_kernelmode   1e+07              2016-06-21 12:44:09.552107446 +0200 CEST
-/intel/docker/ad5221e8ae73/cgroups/cpu_stats/cpu_usage/usage_in_usermode     0                  2016-06-21 12:44:09.552146203 +0200 CEST
+/intel/docker/ad5221e8ae73/cgroups/cpu_stats/cpu_usage/kernel_mode           1e+07              2016-06-21 12:44:09.552107446 +0200 CEST
+/intel/docker/ad5221e8ae73/cgroups/cpu_stats/cpu_usage/user_mode             0                  2016-06-21 12:44:09.552146203 +0200 CEST
 /intel/docker/root/cgroups/cpu_stats/cpu_usage/total_usage                   2.88984998661e+12  2016-06-21 12:44:09.551811277 +0200 CEST
-/intel/docker/root/cgroups/cpu_stats/cpu_usage/usage_in_kernelmode           6.38e+11            2016-06-21 12:44:09.552107446 +0200 CEST
-/intel/docker/root/cgroups/cpu_stats/cpu_usage/usage_in_usermode             9.4397e+11          2016-06-21 12:44:09.552146203 +0200 CEST
+/intel/docker/root/cgroups/cpu_stats/cpu_usage/kernel_mode                   6.38e+11            2016-06-21 12:44:09.552107446 +0200 CEST
+/intel/docker/root/cgroups/cpu_stats/cpu_usage/user_mode                     9.4397e+11          2016-06-21 12:44:09.552146203 +0200 CEST
 ```
 (Keys `ctrl+c` terminate task watcher)
 
 These data are published to file and stored there (in this example in `/tmp/snap-docker-file.log`).
 
 ### Roadmap
-This plugin is in active development.
+There isn't a current roadmap for this plugin, but it is in active development. As we launch this plugin, we do not have any outstanding requirements for the next release.
 
-As we launch this plugin, we do not have any outstanding requirements for the next release. If you have a feature request, please add it as an [issue](https://github.com/intelsdi-x/snap-plugin-collector-docker/issues/new) and/or submit a [pull request](https://github.com/intelsdi-x/snap-plugin-collector-docker/pulls).
+If you have a feature request, please add it as an [issue](https://github.com/intelsdi-x/snap-plugin-collector-docker/issues) and/or submit a [pull request](https://github.com/intelsdi-x/snap-plugin-collector-docker/pulls).
 
 ## Community Support
-This repository is one of **many** plugins in **Snap**, a powerful telemetry framework. See the full project at http://github.com/intelsdi-x/snap.
+This repository is one of **many** plugins in **snap**, a powerful telemetry framework. See the full project at http://github.com/intelsdi-x/snap.
 
-To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support).
+To reach out to other users, head to the [main framework](https://github.com/intelsdi-x/snap#community-support) or visit [Slack](http://slack.snap-telemetry.io).
 
 ## Contributing
 We love contributions!

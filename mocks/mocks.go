@@ -20,125 +20,114 @@ limitations under the License.
 package mocks
 
 import (
-	dock "github.com/fsouza/go-dockerclient"
+	"github.com/fsouza/go-dockerclient"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/intelsdi-x/snap-plugin-collector-docker/client"
-	"github.com/intelsdi-x/snap-plugin-collector-docker/wrapper"
+	"github.com/intelsdi-x/snap-plugin-collector-docker/container"
 )
 
 type ClientMock struct {
 	mock.Mock
 }
 
-func (cm *ClientMock) FindCgroupMountpoint(subsystem string) (string, error) {
-	ret := cm.Called(subsystem)
+func (cm *ClientMock) FindCgroupMountpoint(procfs string, subsystem string) (string, error) {
+	ret := cm.Called(procfs, subsystem)
 
 	return ret.String(0), ret.Error(1)
 }
 
-func (cm *ClientMock) NewDockerClient() (*client.DockerClient, error) {
+func (cm *ClientMock) FindControllerMountpoint(cgroupPath, pid, procfs string) (string, error) {
+	ret := cm.Called(cgroupPath, pid, procfs)
+	return ret.String(0), ret.Error(1)
+}
+
+func (cm *ClientMock) NewDockerClient() (*container.DockerClient, error) {
 	args := cm.Called()
 
-	var r0 *client.DockerClient
+	var r0 *container.DockerClient
 	if args.Get(0) != nil {
-		r0 = args.Get(0).(*client.DockerClient)
+		r0 = args.Get(0).(*container.DockerClient)
 	}
 	return r0, args.Error(1)
 }
 
-func (cm *ClientMock) ListContainersAsMap() (map[string]dock.APIContainers, error) {
+func (cm *ClientMock) ListContainersAsMap() (map[string]*container.ContainerData, error) {
 	args := cm.Called()
 
-	var r0 map[string]dock.APIContainers
+	var r0 map[string]*container.ContainerData
 	if args.Get(0) != nil {
-		r0 = args.Get(0).(map[string]dock.APIContainers)
+		r0 = args.Get(0).(map[string]*container.ContainerData)
 	}
 	return r0, args.Error(1)
 }
 
-func (cm *ClientMock) InspectContainer(string) (*dock.Container, error) {
+func (cm *ClientMock) InspectContainer(string) (*docker.Container, error) {
 	args := cm.Called()
 
-	var r0 *dock.Container
+	var r0 *docker.Container
 
 	if args.Get(0) != nil {
-		r0 = args.Get(0).(*dock.Container)
+		r0 = args.Get(0).(*docker.Container)
 	}
 
 	return r0, args.Error(1)
 }
 
-func (cm *ClientMock) GetStatsFromContainer(string, bool) (*wrapper.Statistics, error) {
-	args := cm.Called()
-
-	var r0 *wrapper.Statistics
-	if args.Get(0) != nil {
-		r0 = args.Get(0).(*wrapper.Statistics)
-	}
-	return r0, args.Error(1)
+func (cm *ClientMock) GetDockerParams(params ...string) (map[string]string, error) {
+	ret := cm.Called(params)
+	return ret.Get(0).(map[string]string), ret.Error(1)
 }
 
-/*
-type StatsMock struct {
-	mock.Mock
+var MockGetters map[string]container.StatGetter = map[string]container.StatGetter{
+	"cpu_usage":  &MockCpuAcct{},
+	"cache":      &MockMemCache{},
+	"usage":      &MockMemUsage{},
+	"statistics": &MockMemStats{},
+	"network":    &MockNet{},
+	"tcp":        &MockTcp{},
+	"tcp6":       &MockTcp{},
 }
 
-func (s *StatsMock) GetStats(path string, stats *cgroups.Stats) error {
-	ret := s.Mock.Called(path, stats)
-	return ret.Error(0)
+type MockCpuAcct struct{}
+
+func (m *MockCpuAcct) GetStats(stats *container.Statistics, opts container.GetStatOpt) error {
+	stats.Cgroups.CpuStats.CpuUsage.PerCpu = []uint64{1111, 2222, 3333, 4444}
+	return nil
 }
-*/
 
-func CreateMockStats() *wrapper.Statistics {
-	stats := wrapper.NewStatistics()
-	stats.Connection.Tcp.Close = 1
-	stats.Connection.Tcp.Established = 1
+type MockMemCache struct{}
 
-	stats.Connection.Tcp6.Close = 2
-	stats.Connection.Tcp6.Established = 2
+func (m *MockMemCache) GetStats(stats *container.Statistics, opts container.GetStatOpt) error {
+	stats.Cgroups.MemoryStats.Cache = 1111
+	return nil
+}
 
-	stats.Network = []wrapper.NetworkInterface{
-		wrapper.NetworkInterface{
-			Name:      "eth0",
-			RxBytes:   1024,
-			RxPackets: 1,
-			TxBytes:   4096,
-			TxPackets: 4,
-			TxErrors:  0,
-		},
-		wrapper.NetworkInterface{
-			Name:      "eth1",
-			RxBytes:   2048,
-			RxPackets: 2,
-			TxBytes:   0,
-			TxPackets: 0,
-			TxErrors:  10,
-		},
-	}
-	stats.Filesystem["dev1"] = wrapper.FilesystemInterface{
-		Device:         "dev1",
-		Type:           "vfs",
-		Limit:          0,
-		Usage:          0,
-		BaseUsage:      0,
-		Available:      0,
-		InodesFree:     0,
-		ReadsCompleted: 0,
-	}
+type MockMemUsage struct{}
 
-	stats.Filesystem["dev2"] = wrapper.FilesystemInterface{
-		Device:         "dev2",
-		Type:           "vfs",
-		Limit:          0,
-		Usage:          0,
-		BaseUsage:      0,
-		Available:      0,
-		InodesFree:     0,
-		ReadsCompleted: 0,
-	}
+func (m *MockMemUsage) GetStats(stats *container.Statistics, opts container.GetStatOpt) error {
+	stats.Cgroups.MemoryStats.Usage.Failcnt = 1111
+	stats.Cgroups.MemoryStats.Usage.Usage = 2222
+	stats.Cgroups.MemoryStats.Usage.MaxUsage = 3333
+	return nil
+}
 
-	stats.CgroupStats.CpuStats.CpuUsage.PercpuUsage = []uint64{1000, 2000, 3000, 4000}
+type MockMemStats struct{}
 
-	return stats
+func (m *MockMemStats) GetStats(stats *container.Statistics, opts container.GetStatOpt) error {
+	stats.Cgroups.MemoryStats.Stats = map[string]uint64{"pgpgin": 11111}
+	return nil
+}
+
+type MockNet struct{}
+
+func (m *MockNet) GetStats(stats *container.Statistics, opts container.GetStatOpt) error {
+	stats.Network = []container.NetworkInterface{{Name: "eth0", TxBytes: 1111, RxBytes: 2222}}
+	return nil
+}
+
+type MockTcp struct{}
+
+func (m *MockTcp) GetStats(stats *container.Statistics, opts container.GetStatOpt) error {
+	stats.Connection.Tcp.Established = 1111
+	return nil
 }

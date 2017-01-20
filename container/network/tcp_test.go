@@ -1,4 +1,3 @@
-//
 // +build small
 
 /*
@@ -23,6 +22,8 @@ limitations under the License.
 package network
 
 import (
+	"path/filepath"
+	"strconv"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -55,7 +56,8 @@ func TestTcpStatsFromProc(t *testing.T) {
 
 		Convey("successful retrieving TCP statistics", func() {
 			for _, pid := range mockPids {
-				tcpStats, err := TcpStatsFromProc(mockProcfsDir, pid)
+				path := filepath.Join(mockProcfsDir, strconv.Itoa(pid), "net/tcp")
+				tcpStats, err := tcpStatsFromProc(path)
 				So(err, ShouldBeNil)
 				So(tcpStats, ShouldNotBeEmpty)
 				So(tcpStats.Established, ShouldEqual, 1)
@@ -66,7 +68,8 @@ func TestTcpStatsFromProc(t *testing.T) {
 
 		Convey("successful retrieving TCP6 statistics", func() {
 			for _, pid := range mockPids {
-				tcpStats, err := Tcp6StatsFromProc(mockProcfsDir, pid)
+				path := filepath.Join(mockProcfsDir, strconv.Itoa(pid), "net/tcp6")
+				tcpStats, err := tcpStatsFromProc(path)
 				So(err, ShouldBeNil)
 				So(tcpStats, ShouldNotBeEmpty)
 				So(tcpStats.Established, ShouldEqual, 1)
@@ -76,7 +79,8 @@ func TestTcpStatsFromProc(t *testing.T) {
 		})
 
 		Convey("return an error when the given PID does not exist", func() {
-			tcpStats, err := TcpStatsFromProc(mockProcfsDir, 0)
+			path := filepath.Join(mockProcfsDir, strconv.Itoa(0), "net/tcp")
+			tcpStats, err := tcpStatsFromProc(path)
 			So(err, ShouldNotBeNil)
 			So(tcpStats, ShouldBeZeroValue)
 		})
@@ -85,7 +89,8 @@ func TestTcpStatsFromProc(t *testing.T) {
 			mockPid := 1
 			err := createMockProcfsNetTCP([]int{mockPid}, []byte(`invalid`))
 			So(err, ShouldBeNil)
-			tcpStats, err := TcpStatsFromProc(mockProcfsDir, mockPid)
+			path := filepath.Join(mockProcfsDir, strconv.Itoa(mockPid), "net/tcp")
+			tcpStats, err := tcpStatsFromProc(path)
 			//So(err, ShouldNotBeNil)
 			So(tcpStats, ShouldBeZeroValue)
 		})
@@ -94,7 +99,8 @@ func TestTcpStatsFromProc(t *testing.T) {
 			mockPid := 2
 			err := createMockProcfsNetTCP([]int{mockPid}, []byte(``))
 			So(err, ShouldBeNil)
-			tcpStats, err := TcpStatsFromProc(mockProcfsDir, mockPid)
+			path := filepath.Join(mockProcfsDir, strconv.Itoa(mockPid), "net/tcp")
+			tcpStats, err := tcpStatsFromProc(path)
 			So(tcpStats, ShouldBeZeroValue)
 		})
 

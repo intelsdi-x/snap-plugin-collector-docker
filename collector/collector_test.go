@@ -1,4 +1,3 @@
-//
 // +build small
 
 /*
@@ -20,43 +19,47 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package docker
+package collector
 
 import (
 	"errors"
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
-	dock "github.com/fsouza/go-dockerclient"
-	"github.com/intelsdi-x/snap-plugin-collector-docker/client"
+	"github.com/fsouza/go-dockerclient"
+	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/mock"
+
+	"github.com/intelsdi-x/snap-plugin-collector-docker/container"
 	. "github.com/intelsdi-x/snap-plugin-collector-docker/mocks"
 	"github.com/intelsdi-x/snap-plugin-lib-go/v1/plugin"
-	. "github.com/smartystreets/goconvey/convey"
 )
 
-var mockStats = CreateMockStats()
 var mockDockerID = "a26c852ce22c"
 var mockDockerHost = "root"
 
-var mockListOfContainers = map[string]dock.APIContainers{
-	mockDockerHost: dock.APIContainers{
-		ID: "/",
+var mockListOfContainers = map[string]*container.ContainerData{
+	mockDockerHost: {
+		ID:    "/",
+		Stats: container.NewStatistics(),
 	},
-	mockDockerID: dock.APIContainers{
-		ID:         "a26c852ce22cbf94f75299b879ccb0d94427aa265778e1e9d6e6483ffb7837ed",
-		Image:      "my/image:latest",
-		Command:    "my-command.sh",
-		Created:    1469187756,
-		Status:     "Up 4 weeks",
-		SizeRw:     0,
-		SizeRootFs: 0,
-		Names:      []string{"/naught_goodall"},
-		Labels: map[string]string{
-			"lkey1": "lval1",
-			"lkey2": "lval2",
-			"lkey3": "lval3",
+	mockDockerID: {
+		ID: "a26c852ce22cbf94f75299b879ccb0d94427aa265778e1e9d6e6483ffb7837ed",
+		Specification: container.Specification{
+			Image:      "my/image:latest",
+			Created:    time.Unix(1469187756, 0).Format("2006-01-02T15:04:05Z07:00"),
+			Status:     "Up 4 weeks",
+			SizeRw:     0,
+			SizeRootFs: 0,
+			Labels: map[string]string{
+				"lkey1": "lval1",
+				"lkey2": "lval2",
+				"lkey3": "lval3",
+			},
 		},
+		Stats: container.NewStatistics(),
 	},
 }
 
@@ -65,22 +68,22 @@ var metricConf = plugin.Config{"endpoint": "unix:///var/run/docker.sock"}
 var mockMts = []plugin.Metric{
 	// representation of metrics grouped as `spec`
 	plugin.Metric{
-		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+		Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("spec", "creation_time"),
 		Config: metricConf,
 	},
 	// representation of metrics grouped as `cgroup/cpu_stats`
 	plugin.Metric{
-		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+		Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("stats", "cgroups", "cpu_stats", "cpu_usage", "total_usage"),
 		Config: metricConf,
 	},
 	plugin.Metric{
-		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+		Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 			AddDynamicElement("docker_id", "an id of docker container").
-			AddStaticElements("stats", "cgroups", "cpu_stats", "cpu_usage", "percpu_usage").
+			AddStaticElements("stats", "cgroups", "cpu_stats", "cpu_usage", "percpu").
 			AddDynamicElement("cpu_id", "an id of cpu").
 			AddStaticElement("value"),
 		Config: metricConf,
@@ -88,19 +91,19 @@ var mockMts = []plugin.Metric{
 
 	// representation of metrics grouped as `cgroups/memory_stats`
 	plugin.Metric{
-		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+		Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("stats", "cgroups", "memory_stats", "cache"),
 		Config: metricConf,
 	},
 	plugin.Metric{
-		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+		Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 			AddDynamicElement("docker_id", "an id of docker container").
-			AddStaticElements("stats", "cgroups", "memory_stats", "stats", "pgpgin"),
+			AddStaticElements("stats", "cgroups", "memory_stats", "statistics", "pgpgin"),
 		Config: metricConf,
 	},
 	plugin.Metric{
-		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+		Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("stats", "cgroups", "memory_stats", "usage", "max_usage"),
 		Config: metricConf,
@@ -108,31 +111,21 @@ var mockMts = []plugin.Metric{
 
 	// representation of metrics grouped as `connection`
 	plugin.Metric{
-		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+		Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("stats", "connection", "tcp", "established"),
 		Config: metricConf,
 	},
 	plugin.Metric{
-		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+		Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("stats", "connection", "tcp6", "established"),
 		Config: metricConf,
 	},
 
-	// representation of metrics grouped as `filesystem`
-	plugin.Metric{
-		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
-			AddDynamicElement("docker_id", "an id of docker container").
-			AddStaticElements("stats", "filesystem").
-			AddDynamicElement("device_name", "a name of filesystem device").
-			AddStaticElement("usage"),
-		Config: metricConf,
-	},
-
 	// representation of metrics grouped as `network`
 	plugin.Metric{
-		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+		Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("stats", "network").
 			AddDynamicElement("network_interface", "a name of network interface or 'total' for aggregate").
@@ -140,7 +133,7 @@ var mockMts = []plugin.Metric{
 		Config: metricConf,
 	},
 	plugin.Metric{
-		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+		Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("stats", "network").
 			AddDynamicElement("network_interface", "a name of network interface or 'total' for aggregate").
@@ -148,7 +141,7 @@ var mockMts = []plugin.Metric{
 		Config: metricConf,
 	},
 	plugin.Metric{
-		Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+		Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 			AddDynamicElement("docker_id", "an id of docker container").
 			AddStaticElements("spec", "labels").
 			AddDynamicElement("label_key", "a key of container's label").
@@ -161,9 +154,9 @@ func TestGetMetricTypes(t *testing.T) {
 	Convey("create Docker collector plugin", t, func() {
 
 		mc := new(ClientMock)
-		mc.On("NewDockerClient").Return(&client.DockerClient{}, nil)
-		dockerPlg := &docker{
-			containers: map[string]containerData{},
+		mc.On("NewDockerClient").Return(&container.DockerClient{}, nil)
+		dockerPlg := &collector{
+			containers: map[string]*container.ContainerData{},
 			client:     mc,
 		}
 
@@ -174,7 +167,7 @@ func TestGetMetricTypes(t *testing.T) {
 
 			Convey("check if version is set ", func() {
 				for _, metric := range metrics {
-					So(metric.Version, ShouldEqual, VERSION)
+					So(metric.Version, ShouldEqual, PLUGIN_VERSION)
 				}
 			})
 		})
@@ -184,9 +177,9 @@ func TestGetMetricTypes(t *testing.T) {
 func TestGetConfigPolicy(t *testing.T) {
 	Convey("create Docker collector plugin", t, func() {
 		mc := new(ClientMock)
-		mc.On("NewDockerClient").Return(&client.DockerClient{}, nil)
-		dockerPlg := &docker{
-			containers: map[string]containerData{},
+		mc.On("NewDockerClient").Return(&container.DockerClient{}, nil)
+		dockerPlg := &collector{
+			containers: map[string]*container.ContainerData{},
 			client:     mc,
 		}
 
@@ -199,8 +192,10 @@ func TestGetConfigPolicy(t *testing.T) {
 }
 
 func TestCollectMetrics(t *testing.T) {
-	dockerPlg := &docker{
-		containers: map[string]containerData{},
+	dockerPlg := &collector{
+		containers: map[string]*container.ContainerData{},
+		mounts:     map[string]string{},
+		conf:       map[string]string{},
 	}
 
 	Convey("return an error when there is no available container", t, func() {
@@ -212,21 +207,27 @@ func TestCollectMetrics(t *testing.T) {
 		So(metrics, ShouldBeEmpty)
 		So(err.Error(), ShouldEqual, "No docker container found")
 	})
-	Convey("return an error when cannot get statistics", t, func() {
+
+	Convey("return an error when cannot find cgroup mountpoints", t, func() {
 		mc := new(ClientMock)
 		mc.On("ListContainersAsMap").Return(mockListOfContainers, nil)
-		mc.On("GetStatsFromContainer").Return(nil, errors.New("Cannot get statistics"))
+		mc.On("FindCgroupMountpoint", mock.Anything, mock.Anything).Return(mock.Anything, fmt.Errorf("Cgroup {%s} mountpoint not found", mock.Anything))
+		mc.On("InspectContainer", mock.Anything).Return(&docker.Container{}, nil)
+		mc.On("FindControllerMountpoint", mock.Anything, mock.Anything, mock.Anything).Return(mock.Anything, nil)
 		dockerPlg.client = mc
 		metrics, err := dockerPlg.CollectMetrics(mockMts)
 		So(err, ShouldNotBeNil)
 		So(metrics, ShouldBeEmpty)
-		So(err.Error(), ShouldEqual, "Cannot get statistics")
+		So(err.Error(), ShouldEqual, fmt.Sprintf("Cgroup {%s} mountpoint not found", mock.Anything))
 	})
+
 	Convey("successful collect metrics", t, func() {
 		mc := new(ClientMock)
 		mc.On("ListContainersAsMap").Return(mockListOfContainers, nil)
-		mc.On("GetStatsFromContainer").Return(mockStats, nil)
-
+		mc.On("FindCgroupMountpoint", mock.Anything, mock.Anything).Return(mock.Anything, nil)
+		mc.On("InspectContainer", mock.Anything).Return(&docker.Container{}, nil)
+		mc.On("FindControllerMountpoint", mock.Anything, mock.Anything, mock.Anything).Return(mock.Anything, nil)
+		getters = MockGetters
 		dockerPlg.client = mc
 		metrics, err := dockerPlg.CollectMetrics(mockMts)
 		So(err, ShouldBeNil)
@@ -235,7 +236,7 @@ func TestCollectMetrics(t *testing.T) {
 		// each of collected metrics should have set a version of collector plugin
 		Convey("collected metrics have set plugin version", func() {
 			for _, metric := range metrics {
-				So(metric.Version, ShouldEqual, VERSION)
+				So(metric.Version, ShouldEqual, PLUGIN_VERSION)
 			}
 		})
 
@@ -247,16 +248,19 @@ func TestCollectMetrics(t *testing.T) {
 		})
 
 	})
+
 	Convey("successful collect metrics for specified dynamic metric", t, func() {
 		mc := new(ClientMock)
 		mc.On("ListContainersAsMap").Return(mockListOfContainers, nil)
-		mc.On("GetStatsFromContainer").Return(mockStats, nil)
-
+		mc.On("FindCgroupMountpoint", mock.Anything, mock.Anything).Return(mock.Anything, nil)
+		mc.On("InspectContainer", mock.Anything).Return(&docker.Container{}, nil)
+		mc.On("FindControllerMountpoint", mock.Anything, mock.Anything, mock.Anything).Return(mock.Anything, nil)
+		getters = MockGetters
 		dockerPlg.client = mc
 
 		Convey("for specific dynamic elements: docker_id", func() {
 			mockMt := plugin.Metric{
-				Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+				Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 					AddDynamicElement("docker_id", "an id of docker container").
 					AddStaticElements("stats", "cgroups", "memory_stats", "cache"),
 				Config: metricConf,
@@ -306,7 +310,7 @@ func TestCollectMetrics(t *testing.T) {
 				})
 				Convey("when specified docker_id has invalid format", func() {
 					mockMt := plugin.Metric{
-						Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+						Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 							AddDynamicElement("docker_id", "an id of docker container").
 							AddStaticElements("stats", "cgroups", "memory_stats", "cache"),
 						Config: metricConf,
@@ -321,11 +325,12 @@ func TestCollectMetrics(t *testing.T) {
 				})
 			})
 		})
+
 		Convey("for specific dynamic elements: docker_id and cpu_id", func() {
 			mockMt := plugin.Metric{
-				Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+				Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 					AddDynamicElement("docker_id", "an id of docker container").
-					AddStaticElements("stats", "cgroups", "cpu_stats", "cpu_usage", "percpu_usage").
+					AddStaticElements("stats", "cgroups", "cpu_stats", "cpu_usage", "per_cpu").
 					AddDynamicElement("cpu_id", "an id of cpu").
 					AddStaticElement("value"),
 				Config: metricConf,
@@ -367,38 +372,10 @@ func TestCollectMetrics(t *testing.T) {
 				})
 			})
 		})
-		Convey("for specific dynamic elements: docker_id and device_name", func() {
-			mockMt := plugin.Metric{
-				Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
-					AddDynamicElement("docker_id", "an id of docker container").
-					AddStaticElements("stats", "filesystem").
-					AddDynamicElement("device_name", "a name of filesystem device").
-					AddStaticElement("usage"),
-				Config: metricConf,
-			}
-			mockMt.Namespace[2].Value = mockDockerID
 
-			Convey("successful when specified device exists", func() {
-				mockMt.Namespace[5].Value = "dev1"
-
-				metrics, err := dockerPlg.CollectMetrics([]plugin.Metric{mockMt})
-				So(err, ShouldBeNil)
-				So(metrics, ShouldNotBeEmpty)
-				So(len(metrics), ShouldEqual, 1)
-				So(metrics[0].Namespace, ShouldResemble, mockMt.Namespace)
-			})
-			Convey("return an error when specified device is invalid", func() {
-				mockMt.Namespace[5].Value = "invalid_dev_name"
-
-				metrics, err := dockerPlg.CollectMetrics([]plugin.Metric{mockMt})
-				So(err, ShouldNotBeNil)
-				So(metrics, ShouldBeEmpty)
-				So(err.Error(), ShouldEqual, fmt.Sprintf("In metric %s the given device name is invalid (no stats for this device)", strings.Join(mockMt.Namespace.Strings(), "/")))
-			})
-		})
 		Convey("for specific dynamic elements: docker_id and network_interface", func() {
 			mockMt := plugin.Metric{
-				Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+				Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 					AddDynamicElement("docker_id", "an id of docker container").
 					AddStaticElements("stats", "network").
 					AddDynamicElement("network_interface", "a name of network interface or 'total' for aggregate").
@@ -426,9 +403,10 @@ func TestCollectMetrics(t *testing.T) {
 				So(err.Error(), ShouldEqual, fmt.Sprintf("In metric %s the given network interface is invalid (no stats for this net interface)", strings.Join(mockMt.Namespace.Strings(), "/")))
 			})
 		})
+
 		Convey("for specific dynamic elements: docker_id and label_key", func() {
 			mockMt := plugin.Metric{
-				Namespace: plugin.NewNamespace(NS_VENDOR, NS_PLUGIN).
+				Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 					AddDynamicElement("docker_id", "an id of docker container").
 					AddStaticElements("spec", "labels").
 					AddDynamicElement("label_key", "a key of container's label").

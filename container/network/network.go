@@ -30,9 +30,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/intelsdi-x/snap-plugin-collector-docker/mounts"
-	"github.com/intelsdi-x/snap-plugin-collector-docker/wrapper"
+	"github.com/intelsdi-x/snap-plugin-collector-docker/container"
 	utils "github.com/intelsdi-x/snap-plugin-utilities/ns"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 const (
@@ -54,14 +55,57 @@ var (
 
 func getListOfNetworkMetrics() []string {
 	metrics := []string{}
-	utils.FromCompositionTags(wrapper.NetworkInterface{}, "", &metrics)
+	utils.FromCompositionTags(container.NetworkInterface{}, "", &metrics)
 	return metrics
+}
+
+type Network struct{}
+
+func (n *Network) GetStats(stats *container.Statistics, opts container.GetStatOpt) error {
+	pid, err := opts.GetIntValue("pid")
+	if err != nil {
+		return err
+	}
+
+	isHost, err := opts.GetBoolValue("is_host")
+	if err != nil {
+		return err
+	}
+
+	procfs, err := opts.GetStringValue("procfs")
+	if err != nil {
+		return err
+	}
+
+	if !isHost {
+		path := filepath.Join(procfs, strconv.Itoa(pid))
+		stats.Network, err = NetworkStatsFromProc(path)
+		if err != nil {
+			// only log error message
+			log.WithFields(log.Fields{
+				"module": "network",
+				"block":  "GetStats",
+			}).Errorf("Unable to get network stats, pid %d: %s", pid, err)
+		}
+
+	} else {
+		stats.Network, err = NetworkStatsFromRoot()
+		if err != nil {
+			// only log error message
+			log.WithFields(log.Fields{
+				"module": "network",
+				"block":  "GetStats",
+			}).Errorf("Unable to get network stats for host: %s", err)
+		}
+	}
+
+	return nil
 }
 
 // NetworkStatsFromProc returns network statistics (e.g. tx_bytes, rx_bytes, etc.) per each interface and aggregated in total
 // for a given path combined from given rootFs and pid of docker process as `<rootFs>/<set_procfs_mountpoint>/<pid>/net/dev`
-func NetworkStatsFromProc(rootFs string, pid int) ([]wrapper.NetworkInterface, error) {
-	netStatsFile := filepath.Join(rootFs, mounts.ProcfsMountPoint, strconv.Itoa(pid), "/net/dev")
+func NetworkStatsFromProc(path string) ([]container.NetworkInterface, error) {
+	netStatsFile := filepath.Join(path, "/net/dev")
 	ifaceStats, err := scanInterfaceStats(netStatsFile)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't read network stats: %v", err)
@@ -76,12 +120,12 @@ func NetworkStatsFromProc(rootFs string, pid int) ([]wrapper.NetworkInterface, e
 
 // NetworkStatsFromRoot returns network statistics (e.g. tx_bytes, rx_bytes, etc.) per each interface and aggregated in total
 // for root (a docker host)
-func NetworkStatsFromRoot() (ifaceStats []wrapper.NetworkInterface, _ error) {
+func NetworkStatsFromRoot() (ifaceStats []container.NetworkInterface, _ error) {
 	devNames, err := listRootNetworkDevices()
 	if err != nil {
 		return nil, err
 	}
-	ifaceStats = []wrapper.NetworkInterface{}
+	ifaceStats = []container.NetworkInterface{}
 	for _, name := range devNames {
 		if isIgnoredDevice(name) {
 			continue
@@ -96,8 +140,8 @@ func NetworkStatsFromRoot() (ifaceStats []wrapper.NetworkInterface, _ error) {
 }
 
 // totalNetworkStats calculates summary of network stats (sum over all net interfaces) and returns
-func totalNetworkStats(ifaceStats []wrapper.NetworkInterface) (ifaceStatsInTotal []wrapper.NetworkInterface) {
-	total := wrapper.NetworkInterface{
+func totalNetworkStats(ifaceStats []container.NetworkInterface) (ifaceStatsInTotal []container.NetworkInterface) {
+	total := container.NetworkInterface{
 		Name: "total",
 	}
 
@@ -135,8 +179,8 @@ func listRootNetworkDevices() (devNames []string, _ error) {
 	return devNames, nil
 }
 
-func interfaceStatsFromDir(ifaceName string) (*wrapper.NetworkInterface, error) {
-	stats := wrapper.NetworkInterface{Name: ifaceName}
+func interfaceStatsFromDir(ifaceName string) (*container.NetworkInterface, error) {
+	stats := container.NetworkInterface{Name: ifaceName}
 	statsValues := map[string]uint64{}
 	for _, metric := range networkMetrics {
 		if metric == "name" {
@@ -152,7 +196,7 @@ func interfaceStatsFromDir(ifaceName string) (*wrapper.NetworkInterface, error) 
 	return &stats, nil
 }
 
-func setIfaceStatsFromMap(stats *wrapper.NetworkInterface, values map[string]uint64) {
+func setIfaceStatsFromMap(stats *container.NetworkInterface, values map[string]uint64) {
 	stats.RxBytes = values["rx_bytes"]
 	stats.RxErrors = values["rx_errors"]
 	stats.RxPackets = values["rx_packets"]
@@ -161,17 +205,6 @@ func setIfaceStatsFromMap(stats *wrapper.NetworkInterface, values map[string]uin
 	stats.TxErrors = values["tx_errors"]
 	stats.TxPackets = values["tx_packets"]
 	stats.TxDropped = values["tx_dropped"]
-}
-
-func setMapFromIfaceStats(values map[string]uint64, stats *wrapper.NetworkInterface) {
-	values["rx_bytes"] = stats.RxBytes
-	values["rx_errors"] = stats.RxErrors
-	values["rx_packets"] = stats.RxPackets
-	values["rx_dropped"] = stats.RxDropped
-	values["tx_bytes"] = stats.TxBytes
-	values["tx_errors"] = stats.TxErrors
-	values["tx_packets"] = stats.TxPackets
-	values["tx_dropped"] = stats.TxDropped
 }
 
 func isIgnoredDevice(ifName string) bool {
@@ -184,7 +217,7 @@ func isIgnoredDevice(ifName string) bool {
 	return false
 }
 
-func scanInterfaceStats(netStatsFile string) ([]wrapper.NetworkInterface, error) {
+func scanInterfaceStats(netStatsFile string) ([]container.NetworkInterface, error) {
 	file, err := os.Open(netStatsFile)
 	if err != nil {
 		return nil, fmt.Errorf("failure opening %s: %v", netStatsFile, err)
@@ -200,7 +233,7 @@ func scanInterfaceStats(netStatsFile string) ([]wrapper.NetworkInterface, error)
 		}
 	}
 
-	stats := []wrapper.NetworkInterface{}
+	stats := []container.NetworkInterface{}
 	for scanner.Scan() {
 		line := scanner.Text()
 		line = strings.Replace(line, ":", "", -1)
@@ -218,7 +251,7 @@ func scanInterfaceStats(netStatsFile string) ([]wrapper.NetworkInterface, error)
 			continue
 		}
 
-		i := wrapper.NetworkInterface{
+		i := container.NetworkInterface{
 			Name: devName,
 		}
 
