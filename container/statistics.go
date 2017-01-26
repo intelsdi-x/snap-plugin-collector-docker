@@ -19,6 +19,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package contains code from OCI/opencontainers (https://github.com/opencontainers/runc) with following:
+// - structure Statistics and its compositions
+
 package container
 
 import "fmt"
