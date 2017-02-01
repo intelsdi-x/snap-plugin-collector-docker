@@ -3,6 +3,7 @@ http://www.apache.org/licenses/LICENSE-2.0.txt
 
 
 Copyright 2016 Intel Corporation
+Copyright 2012-2013 Rackspace, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,6 +17,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+// Package contains code from Google Cadvisor (https://github.com/google/cadvisor) with following:
+// - functions collecting network statistics
 
 // Package network provides network statistics
 package network
