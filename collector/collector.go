@@ -691,6 +691,19 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 		return nil, fmt.Errorf("No metrics found")
 	}
 
+	// add labels as tags to metrics
+
+	for i := range metrics {
+		rid := metrics[i].Namespace[2].Value
+		if rid != "root" {
+			// add labels only for docker cointainer, skip the host
+			for labelKey, labelValue := range c.containers[rid].Specification.Labels {
+			metrics[i].Tags[labelKey] = labelValue
+			}
+		}
+		
+	}
+
 	return metrics, nil
 }
 
