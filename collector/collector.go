@@ -28,7 +28,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/fsouza/go-dockerclient"
+	docker "github.com/fsouza/go-dockerclient"
 	utils "github.com/intelsdi-x/snap-plugin-utilities/ns"
 
 	"github.com/intelsdi-x/snap-plugin-collector-docker/container"
@@ -192,7 +192,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 					Timestamp: time.Now(),
 					Namespace: ns,
 					Data:      utils.GetValueByNamespace(c.containers[rid], metricName),
-					Tags:      mt.Tags,
 					Config:    mt.Config,
 					Version:   PLUGIN_VERSION,
 				}
@@ -241,7 +240,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 						Timestamp: time.Now(),
 						Namespace: rns,
 						Data:      utils.GetValueByNamespace(c.containers[rid].Stats.Filesystem[device], metricName[1:]),
-						Tags:      mt.Tags,
 						Config:    mt.Config,
 						Version:   PLUGIN_VERSION,
 					}
@@ -274,7 +272,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 						Timestamp: time.Now(),
 						Namespace: rns,
 						Data:      c.containers[rid].Specification.Labels[labelKey],
-						Tags:      mt.Tags,
 						Config:    mt.Config,
 						Version:   PLUGIN_VERSION,
 					}
@@ -311,7 +308,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 						Timestamp: time.Now(),
 						Namespace: rns,
 						Data:      utils.GetValueByNamespace(ifaceMap[ifaceName], metricName[1:]),
-						Tags:      mt.Tags,
 						Config:    mt.Config,
 						Version:   PLUGIN_VERSION,
 					}
@@ -332,7 +328,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 							Timestamp: time.Now(),
 							Namespace: rns,
 							Data:      val,
-							Tags:      mt.Tags,
 							Config:    mt.Config,
 							Version:   PLUGIN_VERSION,
 						}
@@ -351,7 +346,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 						Timestamp: time.Now(),
 						Namespace: ns,
 						Data:      c.containers[rid].Stats.Cgroups.CpuStats.CpuUsage.PerCpu[cpuID],
-						Tags:      mt.Tags,
 						Config:    mt.Config,
 						Version:   PLUGIN_VERSION,
 					}
@@ -380,7 +374,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 						Timestamp: time.Now(),
 						Namespace: rns,
 						Data:      utils.GetValueByNamespace(c.containers[rid].Stats.Cgroups.HugetlbStats[size], mt.Namespace.Strings()[len(ns)-1:]),
-						Tags:      mt.Tags,
 						Config:    mt.Config,
 						Version:   PLUGIN_VERSION,
 					}
@@ -399,7 +392,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 							Timestamp: time.Now(),
 							Namespace: rns,
 							Data:      utils.GetValueByNamespace(imr, mt.Namespace.Strings()[len(ns)-1:]),
-							Tags:      mt.Tags,
 							Config:    mt.Config,
 							Version:   PLUGIN_VERSION,
 						}
@@ -418,7 +410,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 						Timestamp: time.Now(),
 						Namespace: ns,
 						Data:      utils.GetValueByNamespace(c.containers[rid].Stats.Cgroups.BlkioStats.IoMergedRecursive[deviceID], mt.Namespace.Strings()[len(ns)-1:]),
-						Tags:      mt.Tags,
 						Config:    mt.Config,
 						Version:   PLUGIN_VERSION,
 					}
@@ -436,7 +427,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 							Timestamp: time.Now(),
 							Namespace: rns,
 							Data:      utils.GetValueByNamespace(isbr, mt.Namespace.Strings()[len(ns)-1:]),
-							Tags:      mt.Tags,
 							Config:    mt.Config,
 							Version:   PLUGIN_VERSION,
 						}
@@ -455,7 +445,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 						Timestamp: time.Now(),
 						Namespace: ns,
 						Data:      utils.GetValueByNamespace(c.containers[rid].Stats.Cgroups.BlkioStats.IoServiceBytesRecursive[deviceID], mt.Namespace.Strings()[len(ns)-1:]),
-						Tags:      mt.Tags,
 						Config:    mt.Config,
 						Version:   PLUGIN_VERSION,
 					}
@@ -473,7 +462,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 							Timestamp: time.Now(),
 							Namespace: rns,
 							Data:      utils.GetValueByNamespace(isr, mt.Namespace.Strings()[len(ns)-1:]),
-							Tags:      mt.Tags,
 							Config:    mt.Config,
 							Version:   PLUGIN_VERSION,
 						}
@@ -492,7 +480,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 						Timestamp: time.Now(),
 						Namespace: ns,
 						Data:      utils.GetValueByNamespace(c.containers[rid].Stats.Cgroups.BlkioStats.IoServicedRecursive[deviceID], mt.Namespace.Strings()[len(ns)-1:]),
-						Tags:      mt.Tags,
 						Config:    mt.Config,
 						Version:   PLUGIN_VERSION,
 					}
@@ -510,7 +497,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 							Timestamp: time.Now(),
 							Namespace: rns,
 							Data:      utils.GetValueByNamespace(iqr, mt.Namespace.Strings()[len(ns)-1:]),
-							Tags:      mt.Tags,
 							Config:    mt.Config,
 							Version:   PLUGIN_VERSION,
 						}
@@ -529,7 +515,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 						Timestamp: time.Now(),
 						Namespace: ns,
 						Data:      utils.GetValueByNamespace(c.containers[rid].Stats.Cgroups.BlkioStats.IoQueuedRecursive[deviceID], mt.Namespace.Strings()[len(ns)-1:]),
-						Tags:      mt.Tags,
 						Config:    mt.Config,
 						Version:   PLUGIN_VERSION,
 					}
@@ -547,7 +532,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 							Timestamp: time.Now(),
 							Namespace: rns,
 							Data:      utils.GetValueByNamespace(istr, mt.Namespace.Strings()[len(ns)-1:]),
-							Tags:      mt.Tags,
 							Config:    mt.Config,
 							Version:   PLUGIN_VERSION,
 						}
@@ -566,7 +550,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 						Timestamp: time.Now(),
 						Namespace: ns,
 						Data:      utils.GetValueByNamespace(c.containers[rid].Stats.Cgroups.BlkioStats.IoServiceTimeRecursive[deviceID], mt.Namespace.Strings()[len(ns)-1:]),
-						Tags:      mt.Tags,
 						Config:    mt.Config,
 						Version:   PLUGIN_VERSION,
 					}
@@ -584,7 +567,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 							Timestamp: time.Now(),
 							Namespace: rns,
 							Data:      utils.GetValueByNamespace(iwtr, mt.Namespace.Strings()[len(ns)-1:]),
-							Tags:      mt.Tags,
 							Config:    mt.Config,
 							Version:   PLUGIN_VERSION,
 						}
@@ -603,7 +585,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 						Timestamp: time.Now(),
 						Namespace: ns,
 						Data:      utils.GetValueByNamespace(c.containers[rid].Stats.Cgroups.BlkioStats.IoWaitTimeRecursive[deviceID], mt.Namespace.Strings()[len(ns)-1:]),
-						Tags:      mt.Tags,
 						Config:    mt.Config,
 						Version:   PLUGIN_VERSION,
 					}
@@ -621,7 +602,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 							Timestamp: time.Now(),
 							Namespace: rns,
 							Data:      utils.GetValueByNamespace(itr, mt.Namespace.Strings()[len(ns)-1:]),
-							Tags:      mt.Tags,
 							Config:    mt.Config,
 							Version:   PLUGIN_VERSION,
 						}
@@ -640,7 +620,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 						Timestamp: time.Now(),
 						Namespace: ns,
 						Data:      utils.GetValueByNamespace(c.containers[rid].Stats.Cgroups.BlkioStats.IoTimeRecursive[deviceID], mt.Namespace.Strings()[len(ns)-1:]),
-						Tags:      mt.Tags,
 						Config:    mt.Config,
 						Version:   PLUGIN_VERSION,
 					}
@@ -658,7 +637,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 							Timestamp: time.Now(),
 							Namespace: rns,
 							Data:      utils.GetValueByNamespace(sr, mt.Namespace.Strings()[len(ns)-1:]),
-							Tags:      mt.Tags,
 							Config:    mt.Config,
 							Version:   PLUGIN_VERSION,
 						}
@@ -677,7 +655,6 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 						Timestamp: time.Now(),
 						Namespace: ns,
 						Data:      utils.GetValueByNamespace(c.containers[rid].Stats.Cgroups.BlkioStats.SectorsRecursive[deviceID], mt.Namespace.Strings()[len(ns)-1:]),
-						Tags:      mt.Tags,
 						Config:    mt.Config,
 						Version:   PLUGIN_VERSION,
 					}
@@ -697,11 +674,9 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 		rid := metrics[i].Namespace[2].Value
 		if rid != "root" {
 			// add labels only for docker cointainer, skip the host
-			for labelKey, labelValue := range c.containers[rid].Specification.Labels {
-			metrics[i].Tags[labelKey] = labelValue
-			}
+			metrics[i].Tags = c.containers[rid].Specification.Labels
 		}
-		
+
 	}
 
 	return metrics, nil
