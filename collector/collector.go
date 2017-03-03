@@ -44,7 +44,7 @@ const (
 	// namespace plugin name
 	PLUGIN_NAME = "docker"
 	// version of plugin
-	PLUGIN_VERSION = 6
+	PLUGIN_VERSION = 7
 
 	// each metric starts with prefix "/intel/docker/<docker_id>"
 	lengthOfNsPrefix = 3

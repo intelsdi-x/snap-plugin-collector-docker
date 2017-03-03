@@ -31,6 +31,12 @@ const (
 	VFS          FsType = "vfs"
 )
 
+// Identifies device in system
+type DeviceId struct {
+	Major uint
+	Minor uint
+}
+
 // DeviceInfo holds device name and major and minor numbers
 type DeviceInfo struct {
 	Device string
