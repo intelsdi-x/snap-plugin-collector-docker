@@ -669,14 +669,19 @@ func (c *collector) CollectMetrics(mts []plugin.Metric) ([]plugin.Metric, error)
 	}
 
 	// add labels as tags to metrics
-
 	for i := range metrics {
 		rid := metrics[i].Namespace[2].Value
+		// adding labels - only for docker's container, skip the host
 		if rid != "root" {
-			// add labels only for docker cointainer, skip the host
-			metrics[i].Tags = c.containers[rid].Specification.Labels
+			if len(metrics[i].Tags) == 0 {
+				metrics[i].Tags = c.containers[rid].Specification.Labels
+			} else {
+				// adding labels one by one to existing tags
+				for lkey, lval := range c.containers[rid].Specification.Labels {
+					metrics[i].Tags[lkey] = lval
+				}
+			}
 		}
-
 	}
 
 	return metrics, nil

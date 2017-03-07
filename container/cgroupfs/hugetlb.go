@@ -27,7 +27,6 @@ import (
 	"strings"
 
 	"github.com/docker/go-units"
-
 	"github.com/intelsdi-x/snap-plugin-collector-docker/container"
 )
 
