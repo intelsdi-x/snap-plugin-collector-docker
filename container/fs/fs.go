@@ -178,15 +178,20 @@ func (self *RealFsInfo) GetDirUsage(dir string, timeout time.Duration) (uint64, 
 // GetFsInfoForPath returns capacity and free space, in bytes, of the set of mounts passed.
 func (self *RealFsInfo) GetFsInfoForPath(mountSet map[string]struct{}, procfs string) ([]Fs, error) {
 	var filesystems []Fs
-	deviceSet := make(map[string]struct{})
+	deviceSet := make(map[DeviceId]struct{})
 
 	diskStatsMap, err := getDiskStatsMap(filepath.Join(procfs, "diskstats"))
 	if err != nil {
 		return nil, err
 	}
+
 	for device, partition := range self.partitions {
+		id := DeviceId{
+			Major: uint(partition.major),
+			Minor: uint(partition.minor),
+		}
 		_, hasMount := mountSet[partition.mountpoint]
-		_, hasDevice := deviceSet[device]
+		_, hasDevice := deviceSet[id]
 		if mountSet == nil || (hasMount && !hasDevice) {
 			var (
 				err error
@@ -207,7 +212,7 @@ func (self *RealFsInfo) GetFsInfoForPath(mountSet map[string]struct{}, procfs st
 				return nil, err
 			}
 
-			deviceSet[device] = struct{}{}
+			deviceSet[id] = struct{}{}
 
 			fs.DeviceInfo = DeviceInfo{
 				Device: device,
@@ -215,7 +220,7 @@ func (self *RealFsInfo) GetFsInfoForPath(mountSet map[string]struct{}, procfs st
 				Minor:  uint(partition.minor),
 			}
 
-			if diskStats, exist := diskStatsMap[device]; exist {
+			if diskStats, exist := diskStatsMap[id]; exist {
 				fs.DiskStats = diskStats
 				filesystems = append(filesystems, fs)
 			}
@@ -486,8 +491,8 @@ func newFsInfo(storageDriver string) (FsInfo, error) {
 	return fsInfo, nil
 }
 
-func getDiskStatsMap(diskStatsFile string) (map[string]DiskStats, error) {
-	diskStatsMap := make(map[string]DiskStats)
+func getDiskStatsMap(diskStatsFile string) (map[DeviceId]DiskStats, error) {
+	diskStatsMap := make(map[DeviceId]DiskStats)
 	file, err := os.Open(diskStatsFile)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -508,8 +513,6 @@ func getDiskStatsMap(diskStatsFile string) (map[string]DiskStats, error) {
 		}
 		// examplary /proc/diskstats content (notice that device name is the third word)
 		// 8      50 sdd2 40 0 280 223 7 0 22 108 0 330 330
-
-		deviceName := path.Join("/dev", words[2])
 		wordLength := len(words)
 		offset := 3
 		var stats = make([]uint64, wordLength-offset)
@@ -536,7 +539,16 @@ func getDiskStatsMap(diskStatsFile string) (map[string]DiskStats, error) {
 			IoTime:          stats[9],
 			WeightedIoTime:  stats[10],
 		}
-		diskStatsMap[deviceName] = diskStats
+		major, err := strconv.ParseUint(words[0], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		minor, err := strconv.ParseUint(words[1], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		diskStatsMap[DeviceId{Major: uint(major), Minor: uint(minor)}] = diskStats
 	}
 
 	return diskStatsMap, nil
