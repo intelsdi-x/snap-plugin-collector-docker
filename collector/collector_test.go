@@ -198,6 +198,14 @@ func TestCollectMetrics(t *testing.T) {
 		conf:       map[string]string{},
 	}
 
+	testLabels := func(metrics []plugin.Metric) {
+		Convey("includes all labels as tags", func() {
+			So(metrics[0].Tags["lkey1"], ShouldEqual, "lval1")
+			So(metrics[0].Tags["lkey2"], ShouldEqual, "lval2")
+			So(metrics[0].Tags["lkey3"], ShouldEqual, "lval3")
+		})
+	}
+
 	Convey("return an error when there is no available container", t, func() {
 		mc := new(ClientMock)
 		mc.On("ListContainersAsMap").Return(nil, errors.New("No docker container found"))
@@ -276,6 +284,8 @@ func TestCollectMetrics(t *testing.T) {
 					So(metrics, ShouldNotBeEmpty)
 					So(len(metrics), ShouldEqual, 1)
 					So(metrics[0].Namespace, ShouldResemble, mockMt.Namespace)
+
+					testLabels(metrics)
 				})
 				Convey("for long docker_id", func() {
 					// specify docker id of requested metric type as a long
@@ -286,6 +296,8 @@ func TestCollectMetrics(t *testing.T) {
 					So(metrics, ShouldNotBeEmpty)
 					So(len(metrics), ShouldEqual, 1)
 					So(strings.Join(metrics[0].Namespace.Strings(), "/"), ShouldEqual, "intel/docker/"+mockDockerID+"/stats/cgroups/memory_stats/cache")
+
+					testLabels(metrics)
 				})
 				Convey("for host of docker_id", func() {
 					// specify docker id of requested metric type
@@ -296,6 +308,10 @@ func TestCollectMetrics(t *testing.T) {
 					So(metrics, ShouldNotBeEmpty)
 					So(len(metrics), ShouldEqual, 1)
 					So(strings.Join(metrics[0].Namespace.Strings(), "/"), ShouldEqual, "intel/docker/root/stats/cgroups/memory_stats/cache")
+
+					Convey("labels are empty", func() {
+						So(metrics[0].Tags, ShouldBeEmpty)
+					})
 				})
 			})
 			Convey("return an error when specified docker_id is invalid", func() {
@@ -346,6 +362,9 @@ func TestCollectMetrics(t *testing.T) {
 				So(metrics, ShouldNotBeEmpty)
 				So(len(metrics), ShouldEqual, 1)
 				So(metrics[0].Namespace, ShouldResemble, mockMt.Namespace)
+
+				testLabels(metrics)
+
 			})
 			Convey("return an error when specified cpu_id is invalid", func() {
 				Convey("when cpu_id is out of range", func() {
@@ -424,6 +443,8 @@ func TestCollectMetrics(t *testing.T) {
 				So(metrics, ShouldNotBeEmpty)
 				So(len(metrics), ShouldEqual, 1)
 				So(metrics[0].Namespace, ShouldResemble, mockMt.Namespace)
+
+				testLabels(metrics)
 			})
 			Convey("return an error when specified label is invalid (not exist)", func() {
 				mockMt.Namespace[5].Value = "lkey1_invalid"
