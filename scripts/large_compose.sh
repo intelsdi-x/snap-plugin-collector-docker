@@ -1,4 +1,21 @@
-#!/bin/bash 
+#!/bin/bash
+
+#http://www.apache.org/licenses/LICENSE-2.0.txt
+#
+#
+#Copyright 2016 Intel Corporation
+#
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#See the License for the specific language governing permissions and
+#limitations under the License.
 
 set -e
 set -u
@@ -27,13 +44,13 @@ _docker_project () {
 _info "docker folder : $docker_folder"
 
 _debug "running docker compose images"
-_docker_project docker-compose up -d 
+_docker_project docker-compose up -d
 _debug "running test: ${TEST_TYPE}"
 
 set +e
 
 RUN_TESTS="\"${PLUGIN_DEST}/scripts/large_tests.sh\""
-_docker_project docker-compose exec docker sh -c "export LOG_LEVEL=$LOG_LEVEL; export RUN_SCRIPT=$RUN_TESTS ; /${__proj_name}/examples/tasks/run-dockerception.sh" 
+_docker_project docker-compose exec docker sh -c "export LOG_LEVEL=$LOG_LEVEL; export RUN_SCRIPT=$RUN_TESTS ; /${__proj_name}/examples/tasks/run-dockerception.sh"
 test_res=$?
 set -e
 echo "exit code from large_compose $test_res"

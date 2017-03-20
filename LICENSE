@@ -175,10 +175,3 @@
       of your accepting any such warranty or additional liability.
 
    END OF TERMS AND CONDITIONS
-
-
-This product contains code from OCI/opencontainers, which is available
-under an Apache License 2.0. For details, see container/statistics.go, container/cgroupfs/blkio.go.
-
-This product contains code from Google cAdvisor, which is available
-uder an Apache License 2.0. For details, see container/fs/fs.go, container/fs/types.go, container/network/network.go, container/network/tcp.go
