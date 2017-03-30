@@ -7,8 +7,8 @@ Intel Corporation (http://www.intel.com/).
 Portions of this software were developed at
 Docker, Inc. (http://www.docker.com/).
 
-This product contains code from OCI/opencontainers, which is available
-under an Apache License 2.0. For details, see container/statistics.go, container/cgroupfs/blkio.go.
+This software contains portions of OCI/opencontainers from https://github.com/opencontainers/runc,
+licensed under an Apache License 2.0 in files container/statistics.go, container/cgroupfs/blkio.go.
 
-This product contains code from Google cAdvisor, which is available
-under an Apache License 2.0. For details, see container/fs/fs.go, container/fs/types.go, container/network/network.go, container/network/tcp.go
+This software contains portions of Google cAdvisor from https://github.com/google/cadvisor,
+licensed under an Apache License 2.0 in files container/fs/fs.go, container/fs/types.go, container/network/network.go, container/network/tcp.go.
