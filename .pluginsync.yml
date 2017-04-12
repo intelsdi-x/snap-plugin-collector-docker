@@ -1,5 +1,5 @@
 # File managed by pluginsync
-pluginsync_config: '0.1.9'
+pluginsync_config: '0.1.14'
 managed_files:
 - .github
 - .github/ISSUE_TEMPLATE.md
@@ -14,5 +14,9 @@ managed_files:
 - scripts/build.sh
 - scripts/common.sh
 - scripts/deps.sh
+- scripts/large.sh
 - scripts/pre_deploy.sh
+- scripts/test
+- scripts/test/large_spec.rb
+- scripts/test/spec_helper.rb
 - scripts/test.sh

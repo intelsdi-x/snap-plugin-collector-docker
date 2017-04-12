@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # File managed by pluginsync
 
 # http://www.apache.org/licenses/LICENSE-2.0.txt
@@ -35,12 +35,10 @@ __proj_dir="$(dirname "$__dir")"
 
 _debug "script directory ${__dir}"
 _debug "project directory ${__proj_dir}"
+_info "skipping go test in following directories: ${NO_GO_TEST}"
 
 [[ "$TEST_TYPE" =~ ^(small|medium|large|legacy|build)$ ]] || _error "invalid TEST_TYPE (value must be 'small', 'medium', 'large', 'legacy', or 'build' recieved:${TEST_TYPE}"
 
-_gofmt() {
-  test -z "$(gofmt -l -d $(find . -type f -name '*.go' -not -path "./vendor/*") | tee /dev/stderr)"
-}
 
 test_unit() {
   # The script does automatic checking on a Go package and its sub-packages, including:
@@ -70,6 +68,7 @@ test_unit() {
 }
 
 if [[ $TEST_TYPE == "legacy" ]]; then
+  UNIT_TEST="go_test go_cover"
   echo "mode: count" > profile.cov
   export TEST_TYPE="unit"
   test_unit
@@ -94,7 +93,7 @@ elif [[ $TEST_TYPE == "large" ]]; then
   elif [[ -f "${__dir}/large_compose.sh" ]]; then
     . "${__dir}/large_compose.sh"
   else
-    _info "No large tests."
+    . "${__dir}/large.sh"
   fi
 elif [[ $TEST_TYPE == "build" ]]; then
   "${__dir}/build.sh"

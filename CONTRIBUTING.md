@@ -29,7 +29,8 @@ $ git clone https://github.com/intelsdi-x/snap-plugin-collector-docker.git
     ```
 $ git checkout -b some-topic-branch
     ```
-* Make your changes and run the test suite if one is provided.
+* Make your changes to the code and add tests to cover contributed code.
+* Validate the changes and run the test suite if one is provided.
 * Commit your changes and push them to your fork.
 * Open a pull request for the appropriate project.
 * Contributors will review your pull request, suggest changes, and merge it when it’s ready and/or offer feedback.
