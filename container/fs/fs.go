@@ -52,8 +52,8 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/docker/docker/pkg/mount"
 	zfs "github.com/mistifyio/go-zfs"
+	"github.com/moby/moby/pkg/mount"
 
 	"github.com/intelsdi-x/snap-plugin-collector-docker/config"
 	"github.com/intelsdi-x/snap-plugin-collector-docker/container"

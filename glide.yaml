@@ -1,23 +1,22 @@
 package: github.com/intelsdi-x/snap-plugin-collector-docker
 import:
-- package: github.com/docker/docker
-  version: ^1.13.0-rc4
-  subpackages:
-  - pkg/mount
+- package: github.com/Sirupsen/logrus
+  version: ^0.11.5
+- package: github.com/docker/go-units
+  version: ^0.3.1
 - package: github.com/fsouza/go-dockerclient
-- package: github.com/intelsdi-x/snap-plugin-utilities
-  subpackages:
-  - ns
 - package: github.com/intelsdi-x/snap-plugin-lib-go
   subpackages:
   - v1/plugin
+- package: github.com/intelsdi-x/snap-plugin-utilities
+  subpackages:
+  - ns
 - package: github.com/mistifyio/go-zfs
   version: ^2.1.1
-- package: github.com/opencontainers/runc
-  version: ^1.0.0-rc2
+- package: github.com/moby/moby
+  version: ^1.13.0-rc4
   subpackages:
-  - libcontainer/cgroups
-  - libcontainer/cgroups/fs
+  - pkg/mount
 - package: github.com/stretchr/testify
   version: ^1.1.4
   subpackages:
