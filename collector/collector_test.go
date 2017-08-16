@@ -77,7 +77,7 @@ var mockMts = []plugin.Metric{
 	plugin.Metric{
 		Namespace: plugin.NewNamespace(PLUGIN_VENDOR, PLUGIN_NAME).
 			AddDynamicElement("docker_id", "an id of docker container").
-			AddStaticElements("stats", "cgroups", "cpu_stats", "cpu_usage", "total_usage"),
+			AddStaticElements("stats", "cgroups", "cpu_stats", "cpu_usage", "total"),
 		Config: metricConf,
 	},
 	plugin.Metric{
