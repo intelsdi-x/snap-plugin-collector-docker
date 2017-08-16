@@ -50,7 +50,7 @@ The prefix of metric's namespace is `/intel/docker/<docker_id_or_root>/stats/cgr
 
 Namespace | Data Type | Description
 ----------|-----------|-----------------------
-cpu_stats/cpu_usage/total_usage | uint64 | The total CPU time consumed
+cpu_stats/cpu_usage/total | uint64 | The total CPU time consumed
 cpu_stats/cpu_usage/kernel_mode | uint64 | CPU time consumed by tasks in system (kernel) mode
 cpu_stats/cpu_usage/user_mode | uint64 | CPU time consumed by tasks in user mode
 cpu_stats/cpu_usage/per_cpu/\<N\>/value | uint64 | CPU time consumed on each N-th CPU by all tasks

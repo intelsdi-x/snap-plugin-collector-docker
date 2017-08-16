@@ -150,13 +150,13 @@ See  output from snaptel task watch <task_id>
 $ snaptel task watch 02dd7ff4-8106-47e9-8b86-70067cd0a850
 Watching Task (02dd7ff4-8106-47e9-8b86-70067cd0a850):
 NAMESPACE                                                                    DATA      		TIMESTAMP
-/intel/docker/7720efd76bb8/cgroups/cpu_stats/cpu_usage/total_usage           2.146646e+07       2016-06-21 12:44:09.551811277 +0200 CEST
+/intel/docker/7720efd76bb8/cgroups/cpu_stats/cpu_usage/total           2.146646e+07       2016-06-21 12:44:09.551811277 +0200 CEST
 /intel/docker/7720efd76bb8/cgroups/cpu_stats/cpu_usage/kernel_mode           1e+07              2016-06-21 12:44:09.552107446 +0200 CEST
 /intel/docker/7720efd76bb8/cgroups/cpu_stats/cpu_usage/user_mode             0                  2016-06-21 12:44:09.552146203 +0200 CEST
-/intel/docker/ad5221e8ae73/cgroups/cpu_stats/cpu_usage/total_usage           2.146646e+07       2016-06-21 12:44:09.551811277 +0200 CEST
+/intel/docker/ad5221e8ae73/cgroups/cpu_stats/cpu_usage/total           2.146646e+07       2016-06-21 12:44:09.551811277 +0200 CEST
 /intel/docker/ad5221e8ae73/cgroups/cpu_stats/cpu_usage/kernel_mode           1e+07              2016-06-21 12:44:09.552107446 +0200 CEST
 /intel/docker/ad5221e8ae73/cgroups/cpu_stats/cpu_usage/user_mode             0                  2016-06-21 12:44:09.552146203 +0200 CEST
-/intel/docker/root/cgroups/cpu_stats/cpu_usage/total_usage                   2.88984998661e+12  2016-06-21 12:44:09.551811277 +0200 CEST
+/intel/docker/root/cgroups/cpu_stats/cpu_usage/total                   2.88984998661e+12  2016-06-21 12:44:09.551811277 +0200 CEST
 /intel/docker/root/cgroups/cpu_stats/cpu_usage/kernel_mode                   6.38e+11            2016-06-21 12:44:09.552107446 +0200 CEST
 /intel/docker/root/cgroups/cpu_stats/cpu_usage/user_mode                     9.4397e+11          2016-06-21 12:44:09.552146203 +0200 CEST
 ```
