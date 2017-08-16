@@ -121,7 +121,7 @@ type CpuStats struct {
 }
 
 type CpuUsage struct {
-	Total      uint64   `json:"total,omitempty"`
+	Total      uint64   `json:"total_usage,omitempty"`
 	UserMode   uint64   `json:"user_mode,omitempty"`
 	KernelMode uint64   `json:"kernel_mode,omitempty"`
 	PerCpu     []uint64 `json:"per_cpu,omitempty"`
