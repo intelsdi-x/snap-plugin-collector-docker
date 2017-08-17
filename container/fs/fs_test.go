@@ -212,8 +212,8 @@ func (s *FsSuite) TestFS() {
 		Convey("GetDirFsDevice", func() {
 			Convey("Valid path", func() {
 				dir, err := fsInfo.GetDirFsDevice("/tmp/test")
-				So(err, ShouldBeNil)
 				So(dir, ShouldNotBeNil)
+				So(err, ShouldBeNil)
 			})
 			Convey("Invalid path", func() {
 				dir, err := fsInfo.GetDirFsDevice("/invalid")
