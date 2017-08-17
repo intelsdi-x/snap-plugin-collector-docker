@@ -191,16 +191,16 @@ func (s *FsSuite) TestFS() {
 		So(dsm[DeviceId{Major: 8, Minor: 1}].WeightedIoTime, ShouldEqual, 330)
 		So(err, ShouldBeNil)
 	})
-	Convey("Check getDiskStatsMap no file", s.T(), func() {
+	Convey("Check getDiskStatsMap", s.T(), func() {
 		_, err := getDiskStatsMap("/tmp/proc/diskstat")
 		So(err, ShouldBeNil)
 	})
-	Convey("Check getDiskStatsMap no file", s.T(), func() {
+	Convey("Check getDiskStatsMap invalid file content (too short)", s.T(), func() {
 		dsm, err := getDiskStatsMap("/tmp/proc/diskstat_invalid_1")
 		So(dsm, ShouldBeNil)
 		So(err, ShouldNotBeNil)
 	})
-	Convey("Check getDiskStatsMap no file", s.T(), func() {
+	Convey("Check getDiskStatsMap invalid file content (non numeric value)", s.T(), func() {
 		dsm, err := getDiskStatsMap("/tmp/proc/diskstat_invalid_2")
 		So(dsm, ShouldBeNil)
 		So(err, ShouldNotBeNil)
