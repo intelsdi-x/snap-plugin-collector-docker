@@ -141,7 +141,8 @@ func (c *DiskUsageCollector) worker(forSubDirs bool, id string, paths ...string)
 		if len(dirs) > 0 {
 			for {
 				for _, d := range dirs {
-					size, err := diskUsage(d)
+					args := []string{"-sx", d}
+					size, err := diskUsage("du", args)
 					if err != nil {
 						fmt.Fprintf(os.Stderr, "WORKER %s, ERROR {%s} for %s\n", id, err, d)
 						break
@@ -447,8 +448,8 @@ func (self *RealFsInfo) updateContainerImagesPath(label string, mounts []*mount.
 	}
 }
 
-func diskUsage(dir string) (uint64, error) {
-	out, err := exec.Command("du", "-sx", dir).Output()
+func diskUsage(cmd string, args []string) (uint64, error) {
+	out, err := exec.Command(cmd, args...).Output()
 	if err != nil {
 		return 0, err
 	}
@@ -463,7 +464,13 @@ func diskUsage(dir string) (uint64, error) {
 }
 
 func newFsInfo(storageDriver string) (FsInfo, error) {
-	mounts, err := mount.GetMounts()
+	var mounts []*mount.Info
+	var err error
+	if storageDriver == "test" {
+		mounts = mockedMounts
+	} else {
+		mounts, err = mount.GetMounts()
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -627,7 +634,17 @@ func parseDMStatus(dmStatus string) (uint64, uint64, error) {
 
 // getZfstats returns ZFS mount stats using zfsutils
 func getZfstats(poolName string) (uint64, uint64, uint64, error) {
-	dataset, err := zfs.GetDataset(poolName)
+	var dataset *zfs.Dataset
+	var err error
+	if poolName == "snapzfs" {
+		dataset = &zfs.Dataset{Name: poolName}
+		dataset.Used = 5000
+		dataset.Avail = 2000
+		dataset.Usedbydataset = 100
+
+	} else {
+		dataset, err = zfs.GetDataset(poolName)
+	}
 	if err != nil {
 		return 0, 0, 0, err
 	}
