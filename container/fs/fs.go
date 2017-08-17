@@ -641,7 +641,6 @@ func getZfstats(poolName string) (uint64, uint64, uint64, error) {
 		dataset.Used = 5000
 		dataset.Avail = 2000
 		dataset.Usedbydataset = 100
-
 	} else {
 		dataset, err = zfs.GetDataset(poolName)
 	}

@@ -1,3 +1,4 @@
+// +build small
 /*
 http://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -178,6 +179,7 @@ func (s *FsSuite) TestFS() {
 	})
 	Convey("Check getDiskStatsMap", s.T(), func() {
 		dsm, err := getDiskStatsMap("/tmp/proc/diskstats")
+		So(err, ShouldBeNil)
 		So(dsm[DeviceId{Major: 8, Minor: 1}].ReadsCompleted, ShouldEqual, 40)
 		So(dsm[DeviceId{Major: 8, Minor: 1}].ReadsMerged, ShouldEqual, 0)
 		So(dsm[DeviceId{Major: 8, Minor: 1}].SectorsRead, ShouldEqual, 280)
@@ -189,7 +191,6 @@ func (s *FsSuite) TestFS() {
 		So(dsm[DeviceId{Major: 8, Minor: 1}].IoInProgress, ShouldEqual, 0)
 		So(dsm[DeviceId{Major: 8, Minor: 1}].IoTime, ShouldEqual, 330)
 		So(dsm[DeviceId{Major: 8, Minor: 1}].WeightedIoTime, ShouldEqual, 330)
-		So(err, ShouldBeNil)
 	})
 	Convey("Check getDiskStatsMap", s.T(), func() {
 		_, err := getDiskStatsMap("/tmp/proc/diskstat")
@@ -238,6 +239,8 @@ func (s *FsSuite) TestFS() {
 		Convey("Check invalid root dir", func() {
 			stats := container.NewStatistics()
 			err := du.GetStats(stats, container.GetStatOpt{"container_id": "27fa0900fe22", "container_drv": "aufs", "procfs": "/tmp/proc", "root_dir": "/invalid_dir"})
+			// Even if root_dir is invalid there is no error returned.
+			// But there is logged message started with: `Os.Stat failed`
 			So(err, ShouldBeNil)
 		})
 		Convey("Check valid aufs driver", func() {
@@ -263,11 +266,6 @@ func (s *FsSuite) TestFS() {
 		Convey("Check root valid overlay driver", func() {
 			stats := container.NewStatistics()
 			err := du.GetStats(stats, container.GetStatOpt{"container_id": "root", "container_drv": "overlay", "procfs": "/tmp/proc", "root_dir": "/tmp"})
-			So(err, ShouldBeNil)
-		})
-		Convey("Check invalid root driver", func() {
-			stats := container.NewStatistics()
-			err := du.GetStats(stats, container.GetStatOpt{"container_id": "root", "container_drv": "ext", "procfs": "/tmp/proc", "root_dir": "/tmp"})
 			So(err, ShouldBeNil)
 		})
 	})
