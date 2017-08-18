@@ -25,6 +25,8 @@ imports:
   - external/github.com/docker/docker/pkg/units
   - external/github.com/docker/docker/volume
   - external/github.com/opencontainers/runc/libcontainer/user
+- name: github.com/urfave/cli
+  version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
 - name: github.com/golang/protobuf
   version: 888eb0692c857ec880338addf316bd662d5e630e
   subpackages:
@@ -106,3 +108,14 @@ testImports:
   - convey
   - convey/gotest
   - convey/reporting
+- name: golang.org/x/text
+  version: 3bd178b88a8180be2df394a1fbb81313916f0e7b
+  subpackages:
+  - secure/bidirule
+  - transform
+  - unicode/bidi
+  - unicode/norm
+- name: google.golang.org/genproto
+  version: b0a3dcfcd1a9bd48e63634bd8802960804cf8315
+  subpackages:
+  - googleapis/rpc/status
