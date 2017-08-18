@@ -30,7 +30,7 @@ imports:
   subpackages:
   - proto
 - name: github.com/intelsdi-x/snap-plugin-lib-go
-  version: 3527311f5c8e6fe9b55fc1f44e1b515a30845e18
+  version: 4fa1360e35b2f1ebb5fb14a575cc11ecc199c531
   subpackages:
   - v1/plugin
   - v1/plugin/rpc
@@ -65,7 +65,7 @@ imports:
   - require
   - suite
 - name: golang.org/x/net
-  version: 154d9f9ea81208afed560f4cf27b4860c8ed1904
+  version: 054b33e6527139ad5b1ec2f6232c3b175bd9a30c
   subpackages:
   - context
   - http2
@@ -78,7 +78,7 @@ imports:
   subpackages:
   - unix
 - name: google.golang.org/grpc
-  version: 0032a855ba5c8a3c8e0d71c2deef354b70af1584
+  version: ^v1.4
   subpackages:
   - codes
   - credentials
