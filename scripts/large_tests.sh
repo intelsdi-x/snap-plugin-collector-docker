@@ -26,9 +26,9 @@ __proj_dir="$(dirname "$__dir")"
 
 . "${__dir}/common.sh"
 
-_info "running the example ${__proj_dir}/examples/tasks/docker-file.sh"
+_info "running the example ${__proj_dir}/examples/docker-file.sh"
 export PLUGIN_PATH="/etc/snap/path"
-source "${__proj_dir}/examples/tasks/docker-file.sh"
+source "${__proj_dir}/examples/docker-file.sh"
 
 _debug "sleeping for 10 seconds so the task can do some work"
 sleep 20

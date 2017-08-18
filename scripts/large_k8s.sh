@@ -46,7 +46,7 @@ tar c  . | kubectl exec $(kubectl get po --no-headers | grep $__deployment_name 
 
 set +e
 _debug "running tests through the runner"
-kubectl exec $(kubectl get po --no-headers | grep $__deployment_name | grep Running | awk '{print $1}') -c main -i -- /src/examples/tasks/run-dockerception.sh
+kubectl exec $(kubectl get po --no-headers | grep $__deployment_name | grep Running | awk '{print $1}') -c main -i -- /src/examples/run-dockerception.sh
 test_res=$?
 set -e
 _debug "exit code $test_res"
