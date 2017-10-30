@@ -51,9 +51,9 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	zfs "github.com/mistifyio/go-zfs"
 	"github.com/moby/moby/pkg/mount"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/intelsdi-x/snap-plugin-collector-docker/config"
 	"github.com/intelsdi-x/snap-plugin-collector-docker/container"

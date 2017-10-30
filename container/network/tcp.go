@@ -46,7 +46,7 @@ import (
 
 	"github.com/intelsdi-x/snap-plugin-collector-docker/container"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type Tcp struct {

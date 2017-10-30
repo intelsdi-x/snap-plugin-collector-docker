@@ -1,6 +1,6 @@
 package: github.com/intelsdi-x/snap-plugin-collector-docker
 import:
-- package: github.com/Sirupsen/logrus
+- package: github.com/sirupsen/logrus
   version: ^0.11.5
 - package: github.com/docker/go-units
   version: ^0.3.1

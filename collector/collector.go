@@ -27,9 +27,9 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	docker "github.com/fsouza/go-dockerclient"
 	utils "github.com/intelsdi-x/snap-plugin-utilities/ns"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/intelsdi-x/snap-plugin-collector-docker/container"
 	"github.com/intelsdi-x/snap-plugin-collector-docker/container/cgroupfs"

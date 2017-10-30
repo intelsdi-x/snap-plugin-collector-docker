@@ -25,10 +25,10 @@ import (
 	"fmt"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
-
 	"github.com/intelsdi-x/snap-plugin-collector-docker/container"
 	"github.com/intelsdi-x/snap-plugin-lib-go/v1/plugin"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // dynamicElement is defined by its name and description
