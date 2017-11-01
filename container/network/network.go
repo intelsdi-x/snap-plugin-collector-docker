@@ -49,7 +49,7 @@ import (
 	"github.com/intelsdi-x/snap-plugin-collector-docker/container"
 	utils "github.com/intelsdi-x/snap-plugin-utilities/ns"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
