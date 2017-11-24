@@ -31,9 +31,9 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/intelsdi-x/snap-plugin-collector-docker/config"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
